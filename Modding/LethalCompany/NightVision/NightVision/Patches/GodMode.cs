@@ -40,10 +40,11 @@ namespace NightVision.Patches
         {
             isGodMode = !isGodMode;
             if (isGodMode)
-                Debug.Log("GodMode on. Can Heal: " + ".toggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodMode");
+                Debug.Log("GodMode on.");
             else
             {
-                Debug.Log("GodMode oof. Can Heal: " + ".toggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodModetoggleGodMode");
+                Debug.Log("GodMode off.");
+
             }
         }
 
