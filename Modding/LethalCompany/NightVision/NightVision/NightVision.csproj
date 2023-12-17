@@ -63,10 +63,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ModHotkey.cs" />
+    <Compile Include="Patches\FlowermanUnstuck.cs" />
     <Compile Include="Patches\GodModeFallDamageFix.cs" />
     <Compile Include="Patches\GodMode.cs" />
     <Compile Include="Patches\GrabDistancePatch.cs" />
     <Compile Include="Patches\NightVisionPatch.cs" />
+    <Compile Include="Patches\NoClip.cs" />
+    <Compile Include="Patches\RemoveOriginalDebugs.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
