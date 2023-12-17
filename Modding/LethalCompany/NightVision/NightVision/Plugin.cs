@@ -33,7 +33,8 @@ namespace NightVision
             harmony.PatchAll(typeof(NightVisionPatch));
             harmony.PatchAll(typeof(GrabDistancePatch));
             harmony.PatchAll(typeof(GodMode));
-            //harmony.PatchAll(typeof(GodModeFallDamageFix));
+            //harmony.PatchAll(typeof(RemoveOriginalDebugs));
+            harmony.PatchAll(typeof(NoClip));
         }
     }
 }
