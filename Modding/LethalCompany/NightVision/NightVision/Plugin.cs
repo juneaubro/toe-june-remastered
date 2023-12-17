@@ -2,11 +2,6 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using NightVision.Patches;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NightVision
 {
@@ -38,6 +33,7 @@ namespace NightVision
             harmony.PatchAll(typeof(NightVisionPatch));
             harmony.PatchAll(typeof(GrabDistancePatch));
             harmony.PatchAll(typeof(GodMode));
+            //harmony.PatchAll(typeof(GodModeFallDamageFix));
             //harmony.PatchAll(typeof(NoFallDamage));
         }
     }

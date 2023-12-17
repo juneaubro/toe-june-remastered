@@ -1,11 +1,5 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace NightVision.Patches
 {
@@ -13,10 +7,11 @@ namespace NightVision.Patches
     internal class NoFallDamage
     {
         [HarmonyPatch("Update")]
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         static void setFallDamage(ref float ___minVelocityToTakeDamage)
         {
-            ___minVelocityToTakeDamage = float.MaxValue;
+            if (GodMode.isGodMode == true)
+                ___minVelocityToTakeDamage = float.MaxValue;
         }
     }
 }

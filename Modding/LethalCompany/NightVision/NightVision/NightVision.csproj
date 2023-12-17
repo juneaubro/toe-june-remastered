@@ -59,9 +59,11 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\SteamLibrary\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ModHotkey.cs" />
+    <Compile Include="Patches\GodModeFallDamageFix.cs" />
     <Compile Include="Patches\GodMode.cs" />
     <Compile Include="Patches\GrabDistancePatch.cs" />
     <Compile Include="Patches\NightVisionPatch.cs" />
@@ -70,4 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; copy /Y "E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\NightVision.dll" "C:\Users\juneau\AppData\Roaming\r2modmanPlus-local\LethalCompany\profiles\de\BepInEx\plugins\Unknown-NightVision325325\NightVision.dll"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
