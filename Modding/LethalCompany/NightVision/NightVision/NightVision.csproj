@@ -67,7 +67,6 @@
     <Compile Include="Patches\GodMode.cs" />
     <Compile Include="Patches\GrabDistancePatch.cs" />
     <Compile Include="Patches\NightVisionPatch.cs" />
-    <Compile Include="Patches\NoFallDamage.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
