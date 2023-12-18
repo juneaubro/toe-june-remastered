@@ -34,7 +34,11 @@ namespace NightVision
             harmony.PatchAll(typeof(GrabDistancePatch));
             harmony.PatchAll(typeof(GodMode));
             //harmony.PatchAll(typeof(RemoveOriginalDebugs));
-            harmony.PatchAll(typeof(NoClip));
+            //harmony.PatchAll(typeof(NoClip));
+            harmony.PatchAll(typeof(FlowermanUnstuck));
+            harmony.PatchAll(typeof(SpawnFlowerMan));
+            harmony.PatchAll(typeof(TeleportInBuildingEntrance));
+            harmony.PatchAll(typeof(TeleportToShip));
         }
     }
 }

@@ -28,7 +28,7 @@ namespace NightVision.Patches
                 ___nightVision.enabled = true;
                 ___nightVision.intensity = .05f;
                 ___nightVision.range = 200f;
-                ___nightVision.color = new Color(209, 208, 194);
+                ___nightVision.color = new Color(20, 20, 19);
                 ___nightVision.shadowStrength = 0f;
                 ___nightVision.type = LightType.Point;
                 ___nightVision.shadows = LightShadows.None;

@@ -116,7 +116,6 @@ E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\
 E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\MonoMod.Utils.dll
 E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\MonoMod.RuntimeDetour.dll
 E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\netstandard.dll
-E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\UnityEngine.AnimationModule.dll
 E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\UnityEngine.AudioModule.dll
 E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\Unity.Animation.Rigging.dll
 E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\UnityEngine.ParticleSystemModule.dll

@@ -11,6 +11,7 @@ namespace NightVision.Patches
         public static ModHotkey dethKey = new ModHotkey(MouseAndKeyboard.Delete, killThyself);
         public static bool isGodMode;
         static bool wantstodie;
+        public static PlayerControllerB lp;
 
         [HarmonyPatch(typeof(PlayerControllerB),"Awake")]
         [HarmonyPostfix]
@@ -23,6 +24,7 @@ namespace NightVision.Patches
         [HarmonyPostfix]
         static void Update(PlayerControllerB __instance)
         {
+            lp = __instance;
             godKey.Update();
             if (isGodMode)
             {
@@ -103,8 +105,11 @@ namespace NightVision.Patches
         [HarmonyPatch(typeof(PlayerControllerB), "KillPlayer")]
         static void setKillPlayer()
         {
-            if(isGodMode)
+            if (isGodMode)
+            {
+                FlowermanUnstuck.hitKillPlayer=true;
                 return;
+            }
         }
     }
 }

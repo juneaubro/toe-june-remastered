@@ -1,13 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using HarmonyLib;
+using UnityEngine;
 
 namespace NightVision.Patches
 {
+    [HarmonyPatch(typeof(FlowermanAI))]
     internal class FlowermanUnstuck
-    {
-        // when in godmode make flowerman let go of you.
+    {// flowermanAi.inSpecialAnimationWithPlayer is the player as in PlayerControllerB instance.
+        public static bool hitKillPlayer;
+        [HarmonyPatch("Update")]
+        [HarmonyPostfix]
+        static void Update(FlowermanAI __instance)
+        {
+            if (GodMode.isGodMode&&hitKillPlayer)
+            {
+                Debug.Log("Flowerman got you.");
+                __instance.creatureAnimator.SetBool("carryingBody", false);
+                hitKillPlayer = false;
+            }
+        }
     }
 }
