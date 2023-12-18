@@ -23,12 +23,14 @@ namespace NightVision.Patches
 
         public static ModHotkey spawnFlowermanKey = new ModHotkey(MouseAndKeyboard.Backslash, spawnFlowerman);
         public static bool pressedSpawnFlowerMan = false;
-        static int enemyIndex = 3;
+        public static int enemyIndex = 3;
+        public static RoundManager rm;
 
         [HarmonyPostfix]
         [HarmonyPatch("Update")]
         static void Update(RoundManager __instance)
         {
+            rm = __instance;
             spawnFlowermanKey.Update();
             if (pressedSpawnFlowerMan)
             {

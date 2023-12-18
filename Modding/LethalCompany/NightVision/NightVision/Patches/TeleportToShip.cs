@@ -19,7 +19,8 @@ namespace NightVision.Patches
                 // ship railing
                 //GodMode.lp.transform.position=__instance.outsideShipSpawnPosition.position;
                 // inside ship
-                GodMode.lp.transform.position=__instance.playerSpawnPositions[Random.Range(0,4)].transform.position;
+                //GodMode.lp.transform.position=__instance.playerSpawnPositions[Random.Range(0,4)].transform.position;
+                GodMode.lp.transform.position=__instance.playerSpawnPositions[0].transform.position;
                 GodMode.lp.isInsideFactory = false;
                 telePressed = !telePressed;
             }
