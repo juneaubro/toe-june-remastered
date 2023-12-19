@@ -40,6 +40,7 @@ namespace NightVision
             harmony.PatchAll(typeof(TeleportInBuildingEntrance));
             harmony.PatchAll(typeof(TeleportToShip));
             harmony.PatchAll(typeof(RevivePlayers));
+            harmony.PatchAll(typeof(IgnoreTwoHands));
         }
     }
 }
