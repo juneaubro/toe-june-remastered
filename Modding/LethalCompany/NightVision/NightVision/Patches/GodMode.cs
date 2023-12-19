@@ -107,7 +107,6 @@ namespace NightVision.Patches
         {
             if (isGodMode)
             {
-                FlowermanUnstuck.hitKillPlayer=true;
                 return;
             }
         }
