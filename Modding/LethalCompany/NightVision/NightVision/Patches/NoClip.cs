@@ -3,6 +3,7 @@ using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
 
+
 namespace NightVision.Patches
 {
     [HarmonyPatch(typeof(PlayerControllerB))]
@@ -29,6 +30,12 @@ namespace NightVision.Patches
             rigidbody = __instance.GetComponent<Rigidbody>();
             setRadius = false;
             originalRadius = controller.radius;
+            __instance.gameplayCamera.gameObject.transform.localPosition += new Vector3(0, 1f, -1.5f);
+            var transformRotation = __instance.gameplayCamera.gameObject.transform.rotation;
+            transformRotation.eulerAngles = new Vector3(
+                __instance.gameplayCamera.gameObject.transform.rotation.x,
+                __instance.gameplayCamera.gameObject.transform.rotation.y + 180f,
+                __instance.gameplayCamera.gameObject.transform.rotation.z);
         }
 
         [HarmonyPatch("Update")]
@@ -47,8 +54,7 @@ namespace NightVision.Patches
             }
             else
             {
-                if(controller != null)
-                    controller.radius = originalRadius;
+                controller.radius = originalRadius;
             }
         }
 
@@ -69,29 +75,21 @@ namespace NightVision.Patches
             foreach (Collider col in colliders)
             {
                 col.enabled = !col.enabled;
-                if (col.enabled == false)
-                {
-                    fallValueUncapped = 0.0f;
-                    fallValue = 0.0f;
-                    //Debug.Log(col.name + " is false -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-                }
             }
             foreach (Collider col in ccolliders)
             {
                 col.enabled = !col.enabled;
-                if (col.enabled == false)
-                {
-                    fallValueUncapped = 0.0f;
-                    fallValue = 0.0f;
-                    //Debug.Log(col.name + " is false -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-                }
             }
 
             controller.radius = Math.Abs(controller.radius - originalRadius) > 0.1 ? originalRadius : 0.0f;
             Debug.Log($"controller radius: {controller.radius} -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
             Debug.Log($"setRadius: {setRadius} ==================================================================");
             rigidbody.isKinematic = !rigidbody.isKinematic;
-            //setRadius = true;
+            rigidbody.detectCollisions = !rigidbody.detectCollisions;
+            controller.detectCollisions = !controller.detectCollisions;
+            controller.enabled = !controller.enabled;
+            playerController.ResetFallGravity();
+            setRadius = true;
         }
     }
 }
