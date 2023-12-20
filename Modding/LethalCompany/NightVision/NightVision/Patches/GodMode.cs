@@ -21,7 +21,7 @@ namespace NightVision.Patches
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         static void Update(PlayerControllerB __instance)
         {
             lp = __instance;
@@ -31,9 +31,9 @@ namespace NightVision.Patches
                 __instance.takingFallDamage = false;
             }
             dethKey.Update();
-            if (wantstodie)
+            if (wantstodie&&!isGodMode)
             {
-                __instance.DamagePlayer(__instance.health);
+                __instance.KillPlayer(Vector3.zero);
                 wantstodie = false;
             }
         }
@@ -109,6 +109,7 @@ namespace NightVision.Patches
             {
                 return;
             }
+            Debug.Log("KillPlayer started");
         }
     }
 }

@@ -32,9 +32,9 @@ namespace NightVision.Patches
                 ___nightVision.shadowStrength = 0f;
                 ___nightVision.type = LightType.Point;
                 ___nightVision.shadows = LightShadows.None;
-                ___nightVision.shape = LightShape.Cone;
-                ___nightVision.transform.position = __instance.playerEye.transform.position;
-                ___nightVision.transform.rotation = __instance.playerEye.transform.rotation;
+                ___nightVision.shape = LightShape.Pyramid;
+                ___nightVision.transform.position = __instance.gameplayCamera.transform.position;
+                ___nightVision.transform.eulerAngles = new Vector3(180f, 180f, 180f);
             }
             else
             {

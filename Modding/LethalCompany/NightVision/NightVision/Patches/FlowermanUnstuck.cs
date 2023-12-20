@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using GameNetcodeStuff;
+using HarmonyLib;
 using System;
 using UnityEngine;
 
@@ -8,25 +9,25 @@ namespace NightVision.Patches
     internal class FlowermanUnstuck
     {// flowermanAi.inSpecialAnimationWithPlayer is the player as in PlayerControllerB instance.
         public static Vector3 lastPosBeforeDed;
+        public static PlayerControllerB pb;
+        public static bool touched=false;
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
         static void Update(FlowermanAI __instance)
         {
-            if (GodMode.isGodMode)
-            {
-                lastPosBeforeDed = GodMode.lp.transform.position;
-            }
         }
 
         [HarmonyPatch(typeof(FlowermanAI), "OnCollideWithPlayer")]
         [HarmonyPrefix]
-        static void OnCollideWithPlayer()
+        static void OnCollideWithPlayer(Collider __0,FlowermanAI __instance)
         {
             if (GodMode.isGodMode)
             {
-                Debug.Log("Collided with flowerman.");
-                GodMode.lp.TeleportPlayer(lastPosBeforeDed);
+                
+                pb = __0.gameObject.GetComponent<PlayerControllerB>();
+                __instance.CancelKillAnimationClientRpc((int)pb.playerClientId);
+                __instance.CancelSpecialAnimationWithPlayer();
                 return;
             }
         }
