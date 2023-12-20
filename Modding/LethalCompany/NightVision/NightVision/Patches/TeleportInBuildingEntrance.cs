@@ -11,7 +11,6 @@ namespace NightVision.Patches
     internal class TeleportInBuildingEntrance
     {
         public static ModHotkey teleKey = new ModHotkey(MouseAndKeyboard.LeftBracket, telePressedToggle);
-        public static ModHotkey teleFlowerDeathKey = new ModHotkey(MouseAndKeyboard.Equals, teleFDK);
         static bool telePressed = false;
         static bool teleFDKPressed = false;
 
@@ -24,12 +23,6 @@ namespace NightVision.Patches
             {
                 __instance.TeleportPlayer();
                 telePressed = !telePressed;
-            }
-            teleFlowerDeathKey.Update();
-            if (teleFDKPressed)
-            {
-                GodMode.lp.TeleportPlayer(FlowermanUnstuck.lastPosBeforeDed);
-                teleFDKPressed = !teleFDKPressed;
             }
         }
 
