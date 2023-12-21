@@ -1,7 +1,11 @@
 ﻿using System;
+using BepInEx;
 using GameNetcodeStuff;
 using HarmonyLib;
+using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 
 namespace NightVision.Patches
@@ -9,55 +13,73 @@ namespace NightVision.Patches
     [HarmonyPatch(typeof(PlayerControllerB))]
     internal class NoClip
     {
+        public static float lastFrameHeight;
+        public static float currentFrameHeight;
+
         public static ModHotkey noclipKey = new ModHotkey(MouseAndKeyboard.PageDown, NoClipToggle);
+
         private static CharacterController controller = null;
         private static PlayerControllerB playerController = null;
         private static Rigidbody rigidbody = null;
-        private static float fallValue = 0.0f;
-        private static float fallValueUncapped = 0.0f;
-        private static float originalRadius = 0.0f;
+
         public static bool g_enabled = false;
-        public static bool setRadius = false;
-        public static Vector3 originalGravity;
+        public static bool flyUp = false;
+        private static float originalRadius;
+        public static float originalJumpForce;
 
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
         public static void Awake(PlayerControllerB __instance)
         {
             playerController = __instance;
-            originalGravity = Physics.gravity;
             controller = __instance.GetComponent<CharacterController>();
             rigidbody = __instance.GetComponent<Rigidbody>();
-            setRadius = false;
+
             originalRadius = controller.radius;
-            __instance.gameplayCamera.gameObject.transform.localPosition += new Vector3(0, 1f, -1.5f);
-            var transformRotation = __instance.gameplayCamera.gameObject.transform.rotation;
-            transformRotation.eulerAngles = new Vector3(
-                __instance.gameplayCamera.gameObject.transform.rotation.x,
-                __instance.gameplayCamera.gameObject.transform.rotation.y + 180f,
-                __instance.gameplayCamera.gameObject.transform.rotation.z);
+            originalJumpForce = playerController.jumpForce;
         }
 
         [HarmonyPatch("Update")]
         [HarmonyPrefix]
-        public static void Update(PlayerControllerB __instance)
+        public static void Update()
         {
             noclipKey.Update();
             if (g_enabled)
             {
-                __instance.fallValue = 0.0f;
-                __instance.fallValueUncapped = 0.0f;
-                __instance.takingFallDamage = false;
-                //Vector3 transformPosition = __instance.transform.position;
-                //transformPosition.y = transformPosition.y;
-                //__instance.transform.position = transformPosition;
+                // don't know if all these are necessary but it works
+                currentFrameHeight = playerController.transform.position.y;
+                playerController.fallValue = 0.0f;
+                playerController.fallValueUncapped = 0.0f;
+                playerController.takingFallDamage = false;
+                playerController.externalForces = Vector3.zero;
+                if (lastFrameHeight != 0.0f)
+                {
+                    Vector3 transformPosition = playerController.transform.position;
+                    if (UnityInput.Current.GetKey(KeyCode.Space))
+                    {
+                        transformPosition.y += 0.03f;
+                    }
+                    else if (UnityInput.Current.GetKey(KeyCode.LeftControl) ||
+                             UnityInput.Current.GetKey(KeyCode.LeftCommand))
+                    {
+                        transformPosition.y -= 0.03f;
+                    }
+                    else
+                    {
+                        transformPosition.y += Math.Abs(currentFrameHeight - lastFrameHeight); // i have no idea what other force is pushing this dude down but just do the opposite
+                    }
+                    playerController.transform.position = transformPosition;
+                }
+                lastFrameHeight = playerController.transform.position.y;
             }
             else
             {
                 controller.radius = originalRadius;
+                playerController.jumpForce = originalJumpForce;
+                lastFrameHeight = 0.0f;
+                currentFrameHeight = 0.0f;
             }
         }
-
 
         public static void NoClipToggle()
         {
@@ -71,7 +93,6 @@ namespace NightVision.Patches
             if(ccolliders.Length == 0)
                 Debug.Log("no child colliders -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 
-
             foreach (Collider col in colliders)
             {
                 col.enabled = !col.enabled;
@@ -81,15 +102,10 @@ namespace NightVision.Patches
                 col.enabled = !col.enabled;
             }
 
-            controller.radius = Math.Abs(controller.radius - originalRadius) > 0.1 ? originalRadius : 0.0f;
-            Debug.Log($"controller radius: {controller.radius} -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-            Debug.Log($"setRadius: {setRadius} ==================================================================");
-            rigidbody.isKinematic = !rigidbody.isKinematic;
+            controller.radius = Math.Abs(controller.radius - originalRadius) > 0.1 ? originalRadius : float.PositiveInfinity; // doesn't actually work with 0
             rigidbody.detectCollisions = !rigidbody.detectCollisions;
             controller.detectCollisions = !controller.detectCollisions;
-            controller.enabled = !controller.enabled;
             playerController.ResetFallGravity();
-            setRadius = true;
         }
     }
 }

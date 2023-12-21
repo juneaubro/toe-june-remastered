@@ -33,7 +33,7 @@ namespace NightVision
             harmony.PatchAll(typeof(NightVisionPatch));
             harmony.PatchAll(typeof(GrabDistancePatch));
             harmony.PatchAll(typeof(GodMode));
-            //harmony.PatchAll(typeof(RemoveOriginalDebugs));
+            harmony.PatchAll(typeof(RemoveOriginalDebugs));
             harmony.PatchAll(typeof(NoClip));
             harmony.PatchAll(typeof(FlowermanUnstuck));
             harmony.PatchAll(typeof(SpawnFlowerMan));
@@ -41,6 +41,7 @@ namespace NightVision
             harmony.PatchAll(typeof(TeleportToShip));
             harmony.PatchAll(typeof(RevivePlayers));
             harmony.PatchAll(typeof(IgnoreTwoHands));
+            harmony.PatchAll(typeof(ThirdPerson));
         }
     }
 }
