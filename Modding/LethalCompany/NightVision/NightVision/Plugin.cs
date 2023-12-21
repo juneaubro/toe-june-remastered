@@ -42,6 +42,9 @@ namespace NightVision
             harmony.PatchAll(typeof(RevivePlayers));
             harmony.PatchAll(typeof(IgnoreTwoHands));
             harmony.PatchAll(typeof(ThirdPerson));
+            harmony.PatchAll(typeof(InfiniteStamina));
+            //harmony.PatchAll(typeof(NoWeight));
+            //harmony.PatchAll(typeof(MovementSpeed));
         }
     }
 }
