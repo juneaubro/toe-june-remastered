@@ -70,8 +70,11 @@
     <Compile Include="Patches\GodMode.cs" />
     <Compile Include="Patches\GrabDistancePatch.cs" />
     <Compile Include="Patches\IgnoreTwoHands.cs" />
+    <Compile Include="Patches\InfiniteStamina.cs" />
+    <Compile Include="Patches\MovementSpeed.cs" />
     <Compile Include="Patches\NightVisionPatch.cs" />
     <Compile Include="Patches\NoClip.cs" />
+    <Compile Include="Patches\NoWeight.cs" />
     <Compile Include="Patches\RemoveOriginalDebugs.cs" />
     <Compile Include="Patches\SpawnFlowerMan.cs" />
     <Compile Include="Patches\TeleportInBuildingEntrance.cs" />
