@@ -33,7 +33,7 @@ namespace NightVision.Patches
             dethKey.Update();
             if (wantstodie&&!isGodMode)
             {
-                __instance.KillPlayer(Vector3.zero);
+                GameNetworkManager.Instance.localPlayerController.KillPlayer(Vector3.zero);
                 wantstodie = false;
             }
         }

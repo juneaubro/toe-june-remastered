@@ -21,11 +21,32 @@ namespace NightVision.Patches
             if (toggledRes)
             {
                 __instance.ReviveDeadPlayers();
-                __instance.AllPlayersHaveRevivedClientRpc();
-                __instance.PlayerHasRevivedServerRpc();
-
                 toggledRes = !toggledRes;
             }
+        }
+
+        [HarmonyPatch("GetPlayerSpawnPosition")]
+        [HarmonyPrefix]
+        static void GetPlayerSpawnPositionPrefix()
+        {
+            if (toggledRes)
+            {
+                return;
+            }
+        }
+
+        [HarmonyPatch("ResetMiscValues")]
+        [HarmonyPrefix]
+        static void ResetMiscValuesPrefix()
+        {
+            return;
+        }
+
+        [HarmonyPatch("ReviveDeadPlayers")]
+        [HarmonyPostfix]
+        static void ReviveDeadPlayersPrefix()
+        {
+            GameNetworkManager.Instance.GetComponent<HUDManager>().HideHUD(false);
         }
 
         public static void toggleRes()
