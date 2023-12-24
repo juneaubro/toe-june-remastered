@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
 using NightVision.Patches;
@@ -42,7 +43,8 @@ namespace NightVision
             harmony.PatchAll(typeof(RevivePlayers));
             harmony.PatchAll(typeof(IgnoreTwoHands));
             harmony.PatchAll(typeof(ThirdPerson));
-            harmony.PatchAll(typeof(InfiniteStamina));
+            if(!Chainloader.PluginInfos.ContainsKey("FlipMods.BetterStamina"))
+                harmony.PatchAll(typeof(InfiniteStamina)); // don't load if better stamina is installed, causes awake() error
             //harmony.PatchAll(typeof(NoWeight));
             //harmony.PatchAll(typeof(MovementSpeed));
         }
