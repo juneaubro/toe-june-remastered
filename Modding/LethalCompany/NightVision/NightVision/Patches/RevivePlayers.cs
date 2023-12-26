@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace NightVision.Patches
 {
@@ -35,18 +36,50 @@ namespace NightVision.Patches
             }
         }
 
+        [HarmonyPatch("AllPlayersHaveRevivedClientRpc")]
+        [HarmonyPrefix]
+        static void AllPlayersHaveRevivedClientRpcPrefix()
+        {
+            Debug.Log("AllPlayersHaveRevivedClientRpc ran");
+        }
+
+
+        [HarmonyPatch("PlayerHasRevivedServerRpc")]
+        [HarmonyPrefix]
+        static void PlayerHasRevivedServerRpcPrefix()
+        {
+            Debug.Log("PlayerHasRevivedServerRpc ran");
+        }
+
+
         [HarmonyPatch("ResetMiscValues")]
         [HarmonyPrefix]
         static void ResetMiscValuesPrefix()
         {
-            return;
+            if (toggledRes)
+                return;
         }
 
         [HarmonyPatch("ReviveDeadPlayers")]
         [HarmonyPostfix]
         static void ReviveDeadPlayersPrefix()
         {
-            GameNetworkManager.Instance.GetComponent<HUDManager>().HideHUD(false);
+            if (HUDManager.Instance != null)
+                HUDManager.Instance.HideHUD(false);
+        }
+
+        [HarmonyPatch("SetShipReadyToLand")]
+        [HarmonyPrefix]
+        static void SetShipReadyToLandPrefix()
+        {
+            
+        }
+
+        [HarmonyPatch("EndOfGame")]
+        [HarmonyPostfix]
+        static void EndOfGamePostfix()
+        {
+            
         }
 
         public static void toggleRes()
