@@ -8,6 +8,7 @@ namespace NightVision.Patches
     internal class GodMode
     {
         public static ModHotkey godKey = new ModHotkey(MouseAndKeyboard.Home, toggleGodMode);
+        public static ModHotkey godKey2 = new ModHotkey(MouseAndKeyboard.MouseForward, toggleGodMode);
         public static ModHotkey dethKey = new ModHotkey(MouseAndKeyboard.Delete, killThyself);
         public static bool isGodMode;
         static bool wantstodie;
@@ -26,6 +27,7 @@ namespace NightVision.Patches
         {
             lp = __instance;
             godKey.Update();
+            godKey2.Update();
             if (isGodMode)
             {
                 __instance.takingFallDamage = false;
