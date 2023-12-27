@@ -80,6 +80,7 @@
     <Compile Include="Patches\TeleportInBuildingEntrance.cs" />
     <Compile Include="Patches\TeleportToShip.cs" />
     <Compile Include="Patches\ThirdPerson.cs" />
+    <Compile Include="Patches\XPGain.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Patches\RevivePlayers.cs" />
