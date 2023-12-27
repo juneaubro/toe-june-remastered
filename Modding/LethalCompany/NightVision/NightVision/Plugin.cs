@@ -47,6 +47,7 @@ namespace NightVision
                 harmony.PatchAll(typeof(InfiniteStamina)); // don't load if better stamina is installed, causes awake() error
             //harmony.PatchAll(typeof(NoWeight));
             //harmony.PatchAll(typeof(MovementSpeed));
+            harmony.PatchAll(typeof(XPGain));
         }
     }
 }
