@@ -71,6 +71,7 @@
     <Compile Include="Patches\GrabDistancePatch.cs" />
     <Compile Include="Patches\IgnoreTwoHands.cs" />
     <Compile Include="Patches\InfiniteStamina.cs" />
+    <Compile Include="Patches\MaskedEnemyUnstuck.cs" />
     <Compile Include="Patches\MovementSpeed.cs" />
     <Compile Include="Patches\NightVisionPatch.cs" />
     <Compile Include="Patches\NoClip.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="Patches\TeleportInBuildingEntrance.cs" />
     <Compile Include="Patches\TeleportToShip.cs" />
     <Compile Include="Patches\ThirdPerson.cs" />
+    <Compile Include="Patches\TPSnapshot.cs" />
     <Compile Include="Patches\XPGain.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
