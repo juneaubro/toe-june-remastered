@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using BepInEx;
 using GameNetcodeStuff;
 using HarmonyLib;
@@ -18,9 +19,9 @@ namespace NightVision.Patches
 
         public static ModHotkey noclipKey = new ModHotkey(MouseAndKeyboard.PageDown, NoClipToggle);
 
-        private static CharacterController controller = null;
-        private static PlayerControllerB playerController = null;
-        private static Rigidbody rigidbody = null;
+        private static PlayerControllerB? _playerController;
+        private static CharacterController? _controller;
+        private static Rigidbody? _rigidbody;
 
         public static bool g_enabled = false;
         public static bool flyUp = false;
@@ -29,32 +30,47 @@ namespace NightVision.Patches
 
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
-        public static void Awake(PlayerControllerB __instance)
+        public static void Awake()
         {
-            playerController = __instance;
-            controller = __instance.GetComponent<CharacterController>();
-            rigidbody = __instance.GetComponent<Rigidbody>();
+            //if (Player.LocalPlayer() == null)
+            //{
+            //    Debug.Log("Player.LocalPlayer() is null! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+            //    return;
+            //}
 
-            originalRadius = controller.radius;
-            originalJumpForce = playerController.jumpForce;
+            //_controller = Player.LocalPlayer().GetComponent<CharacterController>();
+            //_rigidbody = Player.LocalPlayer().GetComponent<Rigidbody>();
+
+            //originalRadius = _controller.radius;
+            //originalJumpForce = Player.LocalPlayer().jumpForce;
         }
 
         [HarmonyPatch("Update")]
         [HarmonyPrefix]
-        public static void Update()
+        public static void Update(PlayerControllerB __instance)
         {
+            if (_playerController == null)
+            {
+                _playerController = __instance;
+            }
+            _controller = _playerController.GetComponent<CharacterController>();
+            _rigidbody = _playerController.GetComponent<Rigidbody>();
+
+            originalRadius = _controller.radius;
+            originalJumpForce = _playerController.jumpForce;
+
             noclipKey.Update();
             if (g_enabled)
             {
                 // don't know if all these are necessary but it works
-                currentFrameHeight = playerController.transform.position.y;
-                playerController.fallValue = 0.0f;
-                playerController.fallValueUncapped = 0.0f;
-                playerController.takingFallDamage = false;
-                playerController.externalForces = Vector3.zero;
+                currentFrameHeight = _playerController.transform.position.y;
+                _playerController.fallValue = 0.0f;
+                _playerController.fallValueUncapped = 0.0f;
+                _playerController.takingFallDamage = false;
+                _playerController.externalForces = Vector3.zero;
                 if (lastFrameHeight != 0.0f)
                 {
-                    Vector3 transformPosition = playerController.transform.position;
+                    Vector3 transformPosition = _playerController.transform.position;
                     if (UnityInput.Current.GetKey(KeyCode.Space))
                     {
                         transformPosition.y += 0.03f;
@@ -68,14 +84,14 @@ namespace NightVision.Patches
                     {
                         transformPosition.y += Math.Abs(currentFrameHeight - lastFrameHeight); // i have no idea what other force is pushing this dude down but just do the opposite
                     }
-                    playerController.transform.position = transformPosition;
+                    _playerController.transform.position = transformPosition;
                 }
-                lastFrameHeight = playerController.transform.position.y;
+                lastFrameHeight = _playerController.transform.position.y;
             }
             else
             {
-                controller.radius = originalRadius;
-                playerController.jumpForce = originalJumpForce;
+                _controller.radius = originalRadius;
+                _playerController.jumpForce = originalJumpForce;
                 lastFrameHeight = 0.0f;
                 currentFrameHeight = 0.0f;
             }
@@ -83,13 +99,16 @@ namespace NightVision.Patches
 
         public static void NoClipToggle()
         {
+            if (_playerController == null || _controller == null || _rigidbody == null)
+                return;
+
             g_enabled = !g_enabled;
 
-            Collider[] colliders = playerController.GetComponents<Collider>();
+            Collider[] colliders = _playerController.GetComponents<Collider>();
             if(colliders.Length == 0)
                 Debug.Log("no colliders -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 
-            Collider[] ccolliders = playerController.GetComponentsInChildren<Collider>();
+            Collider[] ccolliders = _playerController.GetComponentsInChildren<Collider>();
             if(ccolliders.Length == 0)
                 Debug.Log("no child colliders -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 
@@ -102,10 +121,10 @@ namespace NightVision.Patches
                 col.enabled = !col.enabled;
             }
 
-            controller.radius = Math.Abs(controller.radius - originalRadius) > 0.1 ? originalRadius : float.PositiveInfinity; // doesn't actually work with 0
-            rigidbody.detectCollisions = !rigidbody.detectCollisions;
-            controller.detectCollisions = !controller.detectCollisions;
-            playerController.ResetFallGravity();
+            _controller.radius = Math.Abs(_controller.radius - originalRadius) > 0.1 ? originalRadius : float.PositiveInfinity; // doesn't actually work with 0
+            _rigidbody.detectCollisions = !_rigidbody.detectCollisions;
+            _controller.detectCollisions = !_controller.detectCollisions;
+            _playerController.ResetFallGravity();
         }
     }
 }

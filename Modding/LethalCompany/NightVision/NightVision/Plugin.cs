@@ -37,7 +37,7 @@ namespace NightVision
             harmony.PatchAll(typeof(RemoveOriginalDebugs));
             harmony.PatchAll(typeof(NoClip));
             harmony.PatchAll(typeof(FlowermanUnstuck));
-            harmony.PatchAll(typeof(SpawnFlowerMan));
+            harmony.PatchAll(typeof(SpawnEnemy));
             harmony.PatchAll(typeof(TeleportInBuildingEntrance));
             harmony.PatchAll(typeof(TeleportToShip));
             harmony.PatchAll(typeof(RevivePlayers));
