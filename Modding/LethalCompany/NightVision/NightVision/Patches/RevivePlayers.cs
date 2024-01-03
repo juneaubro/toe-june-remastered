@@ -22,7 +22,6 @@ namespace NightVision.Patches
             if (toggledRes)
             {
                 __instance.ReviveDeadPlayers();
-                toggledRes = !toggledRes;
             }
         }
 
@@ -32,7 +31,7 @@ namespace NightVision.Patches
         {
             if (toggledRes)
             {
-                return;
+                //return;
             }
         }
 
@@ -44,6 +43,16 @@ namespace NightVision.Patches
         }
 
 
+        [HarmonyPatch("ShipLeave")]
+        [HarmonyPrefix]
+        static void ShipLeavePrefix()
+        {
+            if (toggledRes)
+            {
+                return;
+            }
+        }
+        
         [HarmonyPatch("PlayerHasRevivedServerRpc")]
         [HarmonyPrefix]
         static void PlayerHasRevivedServerRpcPrefix()
@@ -62,10 +71,12 @@ namespace NightVision.Patches
 
         [HarmonyPatch("ReviveDeadPlayers")]
         [HarmonyPostfix]
-        static void ReviveDeadPlayersPrefix()
+        static void ReviveDeadPlayersPrefix(StartOfRound __instance)
         {
             if (HUDManager.Instance != null)
                 HUDManager.Instance.HideHUD(false);
+            __instance.livingPlayers = __instance.connectedPlayersAmount + 1;
+            toggledRes=!toggledRes;
         }
 
         [HarmonyPatch("SetShipReadyToLand")]
