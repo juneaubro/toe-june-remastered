@@ -143,15 +143,22 @@ namespace NightVision
         public MouseAndKeyboard Key { get; set; }
         public bool KeyWasDown { get; set; }
         public bool IsSettingKey { get; set; }
+        public bool OnHold { get; set; }
+        public bool GetKeyDown { get; set; }
         public Action OnKey { get; set; }
 
-        public ModHotkey(MouseAndKeyboard defaultKey, Action onKey)
+        public ModHotkey(MouseAndKeyboard defaultKey, Action onKey, bool onhold = false)
         {
             DefaultKey = defaultKey;
             Key = defaultKey;
             KeyWasDown = false;
             IsSettingKey = false;
             OnKey = onKey;
+            OnHold = onhold;
+            if (onhold)
+            {
+                GetKeyDown = true;
+            }
         }
 
         public void Update()
@@ -191,14 +198,21 @@ namespace NightVision
             // When key is pressed
             if (buttonControl.wasPressedThisFrame && !KeyWasDown && !IsSettingKey)
             {
+                UnityEngine.Debug.Log("Key pressed.");
                 KeyWasDown = true;
+                if (OnHold == true)
+                    OnKey?.Invoke();
             }
 
             // When key is released
             if (buttonControl.wasReleasedThisFrame && KeyWasDown)
             {
+                UnityEngine.Debug.Log("Key released.");
                 KeyWasDown = false;
+                OnHold = false;
                 OnKey?.Invoke();
+                if (GetKeyDown)
+                    OnHold = true;
             }
         }
     }
