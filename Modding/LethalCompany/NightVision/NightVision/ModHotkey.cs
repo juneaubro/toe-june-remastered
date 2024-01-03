@@ -198,7 +198,6 @@ namespace NightVision
             // When key is pressed
             if (buttonControl.wasPressedThisFrame && !KeyWasDown && !IsSettingKey)
             {
-                UnityEngine.Debug.Log("Key pressed.");
                 KeyWasDown = true;
                 if (OnHold == true)
                     OnKey?.Invoke();
@@ -207,7 +206,6 @@ namespace NightVision
             // When key is released
             if (buttonControl.wasReleasedThisFrame && KeyWasDown)
             {
-                UnityEngine.Debug.Log("Key released.");
                 KeyWasDown = false;
                 OnHold = false;
                 OnKey?.Invoke();
