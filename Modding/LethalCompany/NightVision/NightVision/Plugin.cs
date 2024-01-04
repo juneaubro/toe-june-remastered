@@ -50,6 +50,7 @@ namespace NightVision
             harmony.PatchAll(typeof(XPGain));
             harmony.PatchAll(typeof(MaskedEnemyUnstuck));
             harmony.PatchAll(typeof(TPSnapshot));
+            harmony.PatchAll(typeof(StartLever));
         }
     }
 }
