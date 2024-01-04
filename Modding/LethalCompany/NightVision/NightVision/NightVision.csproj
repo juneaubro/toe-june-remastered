@@ -81,6 +81,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalVars.cs" />
     <Compile Include="ModHotkey.cs" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs" />
     <Compile Include="Patches\FlowermanUnstuck.cs" />
@@ -94,8 +95,10 @@
     <Compile Include="Patches\NightVisionPatch.cs" />
     <Compile Include="Patches\NoClip.cs" />
     <Compile Include="Patches\NoWeight.cs" />
+    <Compile Include="Patches\Player.cs" />
     <Compile Include="Patches\RemoveOriginalDebugs.cs" />
     <Compile Include="Patches\SpawnEnemy.cs" />
+    <Compile Include="Patches\StartLever.cs" />
     <Compile Include="Patches\TeleportInBuildingEntrance.cs" />
     <Compile Include="Patches\TeleportToShip.cs" />
     <Compile Include="Patches\ThirdPerson.cs" />
