@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 namespace NightVision.Patches
-{
+{// Check lines 3580 in PlayerControllerB decompile file. It shows how to sync client and server pos.
     [HarmonyPatch(typeof(StartOfRound))]
     internal class RevivePlayers
     {
