@@ -18,6 +18,7 @@ namespace NightVision.Patches
         public static float currentFrameHeight;
 
         public static ModHotkey noclipKey = new ModHotkey(MouseAndKeyboard.PageDown, NoClipToggle);
+        public static ModHotkey noclipKeyDown = new ModHotkey(MouseAndKeyboard.MouseMiddle, NoClipToggle, true);
 
         private static PlayerControllerB? _playerController;
         private static CharacterController? _controller;
@@ -46,12 +47,13 @@ namespace NightVision.Patches
         }
 
         [HarmonyPatch("Update")]
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         public static void Update(PlayerControllerB __instance)
         {
             if (_playerController == null)
             {
                 _playerController = __instance;
+                Debug.Log("_playerController is null! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
             }
             _controller = _playerController.GetComponent<CharacterController>();
             _rigidbody = _playerController.GetComponent<Rigidbody>();
@@ -59,7 +61,7 @@ namespace NightVision.Patches
             originalRadius = _controller.radius;
             originalJumpForce = _playerController.jumpForce;
 
-            noclipKey.Update();
+            noclipKeyDown.Update();
             if (g_enabled)
             {
                 // don't know if all these are necessary but it works
