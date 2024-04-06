@@ -6,6 +6,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.XR;
 using UnityEngine.Windows;
 
 
@@ -14,36 +15,33 @@ namespace NightVision.Patches
     [HarmonyPatch(typeof(PlayerControllerB))]
     internal class NoClip
     {
-        public static float lastFrameHeight;
-        public static float currentFrameHeight;
-
+        public static bool g_enabled = false;
         public static ModHotkey noclipKey = new ModHotkey(MouseAndKeyboard.PageDown, NoClipToggle);
-        public static ModHotkey noclipKeyDown = new ModHotkey(MouseAndKeyboard.MouseMiddle, NoClipToggle, true);
 
+        private static float NOCLIP_SPEED = 0.0125f;
         private static PlayerControllerB? _playerController;
         private static CharacterController? _controller;
         private static Rigidbody? _rigidbody;
-
-        public static bool g_enabled = false;
-        public static bool flyUp = false;
-        private static float originalRadius;
-        public static float originalJumpForce;
-
+        private static Transform? _parent;
+        private static float _originalJumpForce;
+        private static float _lastFrameHeight;
+        private static float _currentFrameHeight;
+        private static float _originalRadius;
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
-        public static void Awake()
+        public static void Awake(PlayerControllerB __instance)
         {
-            //if (Player.LocalPlayer() == null)
-            //{
-            //    Debug.Log("Player.LocalPlayer() is null! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-            //    return;
-            //}
-
+            _playerController = __instance;
+            _controller = __instance.GetComponent<CharacterController>();
+            _rigidbody = __instance.GetComponent<Rigidbody>();
             //_controller = Player.LocalPlayer().GetComponent<CharacterController>();
             //_rigidbody = Player.LocalPlayer().GetComponent<Rigidbody>();
 
             //originalRadius = _controller.radius;
             //originalJumpForce = Player.LocalPlayer().jumpForce;
+            _originalRadius = _controller.radius;
+            _originalJumpForce = _playerController.jumpForce;
+
         }
 
         [HarmonyPatch("Update")]
@@ -53,49 +51,69 @@ namespace NightVision.Patches
             if (_playerController == null)
             {
                 _playerController = __instance;
-                Debug.Log("_playerController is null! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
             }
             _controller = _playerController.GetComponent<CharacterController>();
             _rigidbody = _playerController.GetComponent<Rigidbody>();
 
-            originalRadius = _controller.radius;
-            originalJumpForce = _playerController.jumpForce;
+            noclipKey.Update();
 
-            noclipKeyDown.Update();
             if (g_enabled)
             {
                 // don't know if all these are necessary but it works
-                currentFrameHeight = _playerController.transform.position.y;
+                _currentFrameHeight = _playerController.transform.position.y;
+
                 _playerController.fallValue = 0.0f;
                 _playerController.fallValueUncapped = 0.0f;
                 _playerController.takingFallDamage = false;
                 _playerController.externalForces = Vector3.zero;
-                if (lastFrameHeight != 0.0f)
+
+                Vector3 transformPosition = _playerController.transform.position;
+
+                if (_lastFrameHeight != 0.0f)
                 {
-                    Vector3 transformPosition = _playerController.transform.position;
+                    if (UnityInput.Current.GetKeyDown(KeyCode.LeftShift))
+                    {
+                        NOCLIP_SPEED = 0.0225f;
+                    }
+
+                    if (UnityInput.Current.GetKeyUp(KeyCode.LeftShift))
+                    {
+                        NOCLIP_SPEED = 0.0125f;
+                    }
                     if (UnityInput.Current.GetKey(KeyCode.Space))
                     {
-                        transformPosition.y += 0.03f;
+                        transformPosition.y += NOCLIP_SPEED;
                     }
-                    else if (UnityInput.Current.GetKey(KeyCode.LeftControl) ||
+                    if (UnityInput.Current.GetKey(KeyCode.LeftControl) ||
                              UnityInput.Current.GetKey(KeyCode.LeftCommand))
                     {
-                        transformPosition.y -= 0.03f;
+                        transformPosition.y -= NOCLIP_SPEED;
                     }
-                    else
+                    if (UnityInput.Current.GetKey(KeyCode.W))
                     {
-                        transformPosition.y += Math.Abs(currentFrameHeight - lastFrameHeight); // i have no idea what other force is pushing this dude down but just do the opposite
+                        transformPosition += (_playerController.gameplayCamera.transform.forward * NOCLIP_SPEED);
                     }
-                    _playerController.transform.position = transformPosition;
+                    if (UnityInput.Current.GetKey(KeyCode.S))
+                    {
+                        transformPosition -= (_playerController.gameplayCamera.transform.forward * NOCLIP_SPEED);
+                    }
+                    if (UnityInput.Current.GetKey(KeyCode.D))
+                    {
+                        transformPosition += (_playerController.gameplayCamera.transform.right * NOCLIP_SPEED);
+                    }
+                    if (UnityInput.Current.GetKey(KeyCode.A))
+                    {
+                        transformPosition -= (_playerController.gameplayCamera.transform.right * NOCLIP_SPEED);
+                    }
                 }
-                lastFrameHeight = _playerController.transform.position.y;
+
+                _playerController.transform.position = transformPosition;
+                _lastFrameHeight = _playerController.transform.position.y;
             }
             else
             {
-                _controller.radius = originalRadius;
-                _playerController.jumpForce = originalJumpForce;
-                lastFrameHeight = 0.0f;
-                currentFrameHeight = 0.0f;
+                _lastFrameHeight = 0.0f;
+                _currentFrameHeight = 0.0f;
             }
         }
 
@@ -107,26 +125,42 @@ namespace NightVision.Patches
             g_enabled = !g_enabled;
 
             Collider[] colliders = _playerController.GetComponents<Collider>();
-            if(colliders.Length == 0)
-                Debug.Log("no colliders -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-
             Collider[] ccolliders = _playerController.GetComponentsInChildren<Collider>();
-            if(ccolliders.Length == 0)
-                Debug.Log("no child colliders -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 
             foreach (Collider col in colliders)
             {
                 col.enabled = !col.enabled;
+                Debug.Log($"{col} is {col.enabled}");
             }
             foreach (Collider col in ccolliders)
             {
                 col.enabled = !col.enabled;
+                Debug.Log($"{col} is {col.enabled}");
             }
 
-            _controller.radius = Math.Abs(_controller.radius - originalRadius) > 0.1 ? originalRadius : float.PositiveInfinity; // doesn't actually work with 0
+            if (g_enabled)
+            {
+                _controller.radius = float.NegativeInfinity;
+                if (_playerController.gameObject.transform.parent != null)
+                {
+                    _parent = _playerController.gameObject.transform.parent; // keep reference around just in case
+                    _playerController.gameObject.transform.SetParent(null);
+                }
+
+            }
+            else
+            {
+                _controller.radius = _originalRadius;
+                if (_parent != null && !StartLever.pulledLever)
+                {
+                    _playerController.gameObject.transform.SetParent(_parent); // should reparent player to ship
+                }
+            }
+
             _rigidbody.detectCollisions = !_rigidbody.detectCollisions;
             _controller.detectCollisions = !_controller.detectCollisions;
             _playerController.ResetFallGravity();
+            _playerController.jumpForce = _originalJumpForce;
         }
     }
 }

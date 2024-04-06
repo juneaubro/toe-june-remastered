@@ -11,7 +11,9 @@ namespace NightVision.Patches
     internal class StartLever
     {
         public static ModHotkey startGameKey = new ModHotkey(MouseAndKeyboard.Numpad9, StartGame);
+        public static bool pulledLever = false;
         private static bool toggleStartGame = false;
+
         [HarmonyPatch("Update")]
         [HarmonyPrefix]
         static void Update(StartMatchLever __instance)
@@ -19,6 +21,8 @@ namespace NightVision.Patches
             startGameKey.Update();
             if(toggleStartGame)
                 __instance.StartGame();
+
+            pulledLever = __instance.leverHasBeenPulled;
         }
         public static void StartGame()
         {
