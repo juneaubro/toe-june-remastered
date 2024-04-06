@@ -52,13 +52,13 @@ namespace NightVision.Patches
                 rm = __instance;
 
             spawnEnemynKey.Update();
-            //if (pressedSpawnEnemy)
-            //{
-            //    pressedSpawnEnemy = false;
-            //    Debug.Log("Spawned ENEMY GUB.");
-            //    Vector3 fixedPos = GodMode.lp.transform.position + GodMode.lp.transform.forward * 5f;
-            //    __instance.SpawnEnemyOnServer(fixedPos, 0,enemyIndex); // supposedly flowerman currently
-            //}
+            if (pressedSpawnEnemy)
+            {
+                pressedSpawnEnemy = false;
+                Debug.Log("Spawned ENEMY GUB.");
+                Vector3 fixedPos = GodMode.lp.transform.position + GodMode.lp.transform.forward * 5f;
+                __instance.SpawnEnemyOnServer(fixedPos, 0, -1); // supposedly flowerman currently
+            }
 
             // Determine enemy indices at runtime to match current level's indices
             if (getEnemyEnumIndices)
@@ -109,7 +109,7 @@ namespace NightVision.Patches
 
             //Debug.Log("Spawned ENEMY GUB.");
             //Vector3 fixedPos = GodMode.lp.transform.position + GodMode.lp.transform.forward * 5f;
-            //rm.SpawnEnemyOnServer(fixedPos, 0,enemyIndex); // supposedly flowerman currently
+            //rm.SpawnEnemyOnServer(fixedPos, 0, enemyIndex); // supposedly flowerman currently
             //pressedSpawnEnemy = false;
         }
     }

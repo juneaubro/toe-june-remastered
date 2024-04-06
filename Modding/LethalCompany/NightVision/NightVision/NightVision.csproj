@@ -36,8 +36,9 @@
     <Reference Include="0Harmony">
       <HintPath>..\..\..\..\..\SteamLibrary\steamapps\common\Lethal Company\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\SteamLibrary\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Z:\SteamLibrary\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\..\..\..\..\SteamLibrary\steamapps\common\Lethal Company\BepInEx\core\BepInEx.dll</HintPath>
@@ -84,6 +85,7 @@
     <Compile Include="GlobalVars.cs" />
     <Compile Include="ModHotkey.cs" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs" />
+    <Compile Include="Patches\BoomDead.cs" />
     <Compile Include="Patches\FlowermanUnstuck.cs" />
     <Compile Include="Patches\GodModeFallDamageFix.cs" />
     <Compile Include="Patches\GodMode.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="Patches\TeleportToShip.cs" />
     <Compile Include="Patches\ThirdPerson.cs" />
     <Compile Include="Patches\TPSnapshot.cs" />
+    <Compile Include="Patches\WhatAreLocks.cs" />
     <Compile Include="Patches\XPGain.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

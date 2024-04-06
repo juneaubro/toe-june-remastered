@@ -35,7 +35,7 @@ namespace NightVision
             harmony.PatchAll(typeof(GrabDistancePatch));
             harmony.PatchAll(typeof(GodMode));
             harmony.PatchAll(typeof(RemoveOriginalDebugs));
-            harmony.PatchAll(typeof(NoClip));
+            //harmony.PatchAll(typeof(NoClip));
             harmony.PatchAll(typeof(FlowermanUnstuck));
             harmony.PatchAll(typeof(SpawnEnemy));
             harmony.PatchAll(typeof(TeleportInBuildingEntrance));
@@ -51,6 +51,8 @@ namespace NightVision
             harmony.PatchAll(typeof(MaskedEnemyUnstuck));
             harmony.PatchAll(typeof(TPSnapshot));
             harmony.PatchAll(typeof(StartLever));
+            harmony.PatchAll(typeof(BoomDead));
+            harmony.PatchAll(typeof(WhatAreLocks));
         }
     }
 }
