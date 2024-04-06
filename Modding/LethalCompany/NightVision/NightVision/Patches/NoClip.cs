@@ -29,35 +29,47 @@ namespace NightVision.Patches
         private static float _originalRadius;
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
-        public static void Awake(PlayerControllerB __instance)
+        public static void Awake()
         {
-            _playerController = __instance;
-            _controller = __instance.GetComponent<CharacterController>();
-            _rigidbody = __instance.GetComponent<Rigidbody>();
-            //_controller = Player.LocalPlayer().GetComponent<CharacterController>();
-            //_rigidbody = Player.LocalPlayer().GetComponent<Rigidbody>();
+            //_playerController = GameNetworkManager.Instance.localPlayerController;
+            //_controller = _playerController.GetComponent<CharacterController>();
+            //_rigidbody = _playerController.GetComponent<Rigidbody>();
+            ////_controller = Player.LocalPlayer().GetComponent<CharacterController>();
+            ////_rigidbody = Player.LocalPlayer().GetComponent<Rigidbody>();
 
-            //originalRadius = _controller.radius;
-            //originalJumpForce = Player.LocalPlayer().jumpForce;
-            _originalRadius = _controller.radius;
-            _originalJumpForce = _playerController.jumpForce;
+            ////originalRadius = _controller.radius;
+            ////originalJumpForce = Player.LocalPlayer().jumpForce;
+            //_originalRadius = _controller.radius;
+            //_originalJumpForce = _playerController.jumpForce;
 
         }
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
-        public static void Update(PlayerControllerB __instance)
+        public static void Update()
         {
             if (_playerController == null)
             {
-                _playerController = __instance;
+                _playerController = GameNetworkManager.Instance.localPlayerController;
+
+                if (_playerController != null)
+                {
+                    _controller = _playerController.GetComponent<CharacterController>();
+                    _rigidbody = _playerController.GetComponent<Rigidbody>();
+                    //_controller = Player.LocalPlayer().GetComponent<CharacterController>();
+                    //_rigidbody = Player.LocalPlayer().GetComponent<Rigidbody>();
+
+                    //originalRadius = _controller.radius;
+                    //originalJumpForce = Player.LocalPlayer().jumpForce;
+                    _originalRadius = _controller.radius;
+                    _originalJumpForce = _playerController.jumpForce;
+
+                }
             }
-            _controller = _playerController.GetComponent<CharacterController>();
-            _rigidbody = _playerController.GetComponent<Rigidbody>();
 
             noclipKey.Update();
 
-            if (g_enabled)
+            if (g_enabled && _playerController != null)
             {
                 // don't know if all these are necessary but it works
                 _currentFrameHeight = _playerController.transform.position.y;
