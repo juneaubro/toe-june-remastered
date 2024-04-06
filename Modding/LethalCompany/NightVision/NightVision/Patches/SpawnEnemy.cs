@@ -57,7 +57,7 @@ namespace NightVision.Patches
                 pressedSpawnEnemy = false;
                 Debug.Log("Spawned ENEMY GUB.");
                 Vector3 fixedPos = GodMode.lp.transform.position + GodMode.lp.transform.forward * 5f;
-                __instance.SpawnEnemyOnServer(fixedPos, 0, -1); // supposedly flowerman currently
+                __instance.SpawnEnemyOnServer(fixedPos, 0, 13); // supposedly flowerman currently
             }
 
             // Determine enemy indices at runtime to match current level's indices

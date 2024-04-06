@@ -21,7 +21,7 @@ namespace NightVision.Patches
         [HarmonyPatch("Update")]
         static void Update(PlayerControllerB __instance)
         {
-            plr = __instance;
+            plr = GameNetworkManager.Instance.localPlayerController;
             unlock.Update();
             if(unlockPressed)
             {
