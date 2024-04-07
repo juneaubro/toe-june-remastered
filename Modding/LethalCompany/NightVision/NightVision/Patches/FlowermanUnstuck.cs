@@ -10,11 +10,10 @@ namespace NightVision.Patches
     {// flowermanAi.inSpecialAnimationWithPlayer is the player as in PlayerControllerB instance.
         public static Vector3 lastPosBeforeDed;
         public static PlayerControllerB pb;
-        public static bool touched=false;
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
-        static void Update(FlowermanAI __instance)
+        static void Update()
         {
         }
 

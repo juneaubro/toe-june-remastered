@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System;
+using GameNetcodeStuff;
 using HarmonyLib;
 
 namespace NightVision.Patches
@@ -10,7 +11,8 @@ namespace NightVision.Patches
         [HarmonyPostfix]
         static void Update(ref float ___grabDistance)
         {
-            ___grabDistance = 50f;
+            if (Math.Abs(___grabDistance - 50.0f) > 0.01)
+                ___grabDistance = 50.0f;
         }
     }
 }

@@ -17,12 +17,12 @@ namespace NightVision.Patches
             if (GodMode.isGodMode)
             {
                 for (int index = 0; index < list.Count; ++index)
-            { 
+                { 
                     if (list[index].opcode.Name == "call")
                     {
-                    list[index] = new CodeInstruction(OpCodes.Nop);
+                        list[index] = new CodeInstruction(OpCodes.Nop);
                     }
-            }
+                }
             }
             return list;
         }

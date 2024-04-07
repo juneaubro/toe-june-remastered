@@ -26,9 +26,9 @@ namespace NightVision.Patches
                 telePressed = !telePressed;
             }
             teleFlowerDeathKey.Update();
-            if (teleFDKPressed)
+            if (teleFDKPressed && Player.LocalPlayer() != null)
             {
-                GodMode.lp.TeleportPlayer(FlowermanUnstuck.lastPosBeforeDed);
+                Player.LocalPlayer().TeleportPlayer(FlowermanUnstuck.lastPosBeforeDed);
                 teleFDKPressed = !teleFDKPressed;
             }
         }

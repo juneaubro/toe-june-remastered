@@ -1,37 +1,29 @@
-﻿using BepInEx;
+﻿#nullable enable
+using BepInEx;
 using GameNetcodeStuff;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.InputSystem.HID;
 
 namespace NightVision.Patches
 {
     [HarmonyPatch(typeof(PlayerControllerB))]
     internal class BoomDead
     {
-        static PlayerControllerB plr;
+        static PlayerControllerB? _plr;
         public static ModHotkey dead = new ModHotkey(MouseAndKeyboard.MouseMiddle, KillHimNow,true);
         public static bool deadPressed = false;
 
         [HarmonyPostfix]
         [HarmonyPatch("Update")]
-        static void Update(PlayerControllerB __instance)
+        static void Update()
         {
-            plr = GameNetworkManager.Instance.localPlayerController;
+            _plr = Player.LocalPlayer();
             dead.Update();
-            if (deadPressed)
+            if (deadPressed && _plr != null)
             {
-                RaycastHit hit;
-                Vector3 ori = new Vector3(plr.transform.position.x, plr.transform.position.y, plr.transform.position.z);
-                Vector3 oric = new Vector3(plr.gameplayCamera.transform.position.x, plr.gameplayCamera.transform.position.y, plr.gameplayCamera.transform.position.z);
-                if (Physics.Raycast(oric+__instance.transform.forward*1.1f, plr.gameplayCamera.transform.forward, out hit, float.MaxValue))
+                Vector3 ori = new Vector3(_plr.transform.position.x, _plr.transform.position.y, _plr.transform.position.z);
+                Vector3 oric = new Vector3(_plr.gameplayCamera.transform.position.x, _plr.gameplayCamera.transform.position.y, _plr.gameplayCamera.transform.position.z);
+                if (Physics.Raycast(oric+_plr.transform.forward*1.1f, _plr.gameplayCamera.transform.forward, out var hit, float.MaxValue))
                 {
                     UnityEngine.Debug.Log(hit.transform.gameObject.name);
                     if (hit.transform.gameObject.GetComponent<PlayerControllerB>() != null && hit.transform.gameObject.GetComponent<PlayerControllerB>() != GameNetworkManager.Instance.localPlayerController)
@@ -174,8 +166,9 @@ namespace NightVision.Patches
                         //    hit.transform.gameObject.GetComponentInParent<RadMechAI>().KillEnemyOnOwnerClient();
                         //    hit.transform.gameObject.GetComponentInParent<RadMechAI>().isEnemyDead = true;
                         //}
-                    }
+                }
             }
+
         }
 
         static void KillHimNow()

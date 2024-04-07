@@ -12,18 +12,19 @@ namespace NightVision.Patches
 
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
-        static void Awake(ref Light ___nightVision)
+        static void Awake()
         {
             isNightVision = true;
         }
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
-        static void Update(ref Light ___nightVision,PlayerControllerB __instance)
+        static void Update(ref Light ___nightVision)
         {
             nvKey.Update();
+
             // could honestly change ___nightVision.enabled = false :/
-            if (isNightVision)
+            if (isNightVision && Player.LocalPlayer() != null)
             {
                 ___nightVision.enabled = true;
                 ___nightVision.intensity = .05f;
@@ -33,7 +34,7 @@ namespace NightVision.Patches
                 ___nightVision.type = LightType.Point;
                 ___nightVision.shadows = LightShadows.None;
                 ___nightVision.shape = LightShape.Pyramid;
-                ___nightVision.transform.position = __instance.gameplayCamera.transform.position;
+                ___nightVision.transform.position = Player.LocalPlayer().gameplayCamera.transform.position;
                 ___nightVision.transform.eulerAngles = new Vector3(180f, 180f, 180f);
             }
             else
@@ -45,10 +46,13 @@ namespace NightVision.Patches
         public static void toggleNightVision()
         {
             isNightVision = !isNightVision;
-            if(isNightVision)
-                Debug.Log("Nightvision on.");
-            else
-                Debug.Log("Nightvision off.");
+
+            Debug.Log($"Nightvision {isNightVision}.");
+
+            //if(isNightVision)
+            //    Debug.Log("Nightvision on.");
+            //else
+            //    Debug.Log("Nightvision off.");
         }
     }
 }

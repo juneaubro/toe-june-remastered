@@ -10,29 +10,11 @@ namespace NightVision.Patches
     [HarmonyPatch(typeof(RoundManager))]
     internal class SpawnEnemy
     {
-
-
-        /*      
-         *      EnemyIndex (as of doing this :) )
-         *     -1   -   Random
-         *      0   -   Girl
-         *      1   -   Lasso
-         *      2   -   Bunker Spider
-         *      3   -   Centipede
-         *      4   -   Blob
-         *      5   -   Flowerman
-         *      6   -   Spring
-         *      7   -   Jester
-         *      8   -   Puffer
-         *      9   -   Nutcracker
-         *      10  -   Masked
-         */
-
         // toe make a better spawn all enemy patch pls
         // k but this thing is getting refactored - formerly known as SpawnFlowerman
         // get and set via RoundManager
-        public static Dictionary<SpawnableEnemyWithRarity, int> Enemies = new Dictionary<SpawnableEnemyWithRarity, int>();
-        public static List<TextMeshProUGUI> EnemyNames = new List<TextMeshProUGUI>(); // use to keep track of enemy names for later UI stuff
+        public static Dictionary<SpawnableEnemyWithRarity, int> enemies = new Dictionary<SpawnableEnemyWithRarity, int>();
+        public static List<TextMeshProUGUI> enemyNames = new List<TextMeshProUGUI>(); // use to keep track of enemy names for later UI stuff
         public static Canvas canvas;
 
         public static ModHotkey spawnEnemynKey = new ModHotkey(MouseAndKeyboard.Backslash, spawnEnemy);
@@ -52,12 +34,12 @@ namespace NightVision.Patches
                 rm = __instance;
 
             spawnEnemynKey.Update();
-            if (pressedSpawnEnemy)
+            if (pressedSpawnEnemy && Player.LocalPlayer() != null)
             {
                 pressedSpawnEnemy = false;
                 Debug.Log("Spawned ENEMY GUB.");
-                Vector3 fixedPos = GodMode.lp.transform.position + GodMode.lp.transform.forward * 5f;
-                __instance.SpawnEnemyOnServer(fixedPos, 0, 13); // supposedly flowerman currently
+                Vector3 fixedPos = Player.LocalPlayer().transform.position + Player.LocalPlayer().transform.forward * 5f;
+                __instance.SpawnEnemyOnServer(fixedPos, 0, 13);
             }
 
             // Determine enemy indices at runtime to match current level's indices
@@ -66,17 +48,17 @@ namespace NightVision.Patches
                 getEnemyEnumIndices = false;
                 foreach (SpawnableEnemyWithRarity enemy in __instance.currentLevel.Enemies)
                 {
-                    Enemies[enemy] = enemyIndex;
+                    enemies[enemy] = enemyIndex;
                     TextMeshProUGUI tempText = new TextMeshProUGUI
                     {
                         text = enemy.enemyType.enemyName
                         
                     };
-                    EnemyNames.Add(tempText);
+                    enemyNames.Add(tempText);
                     Debug.Log($"{enemy.enemyType.enemyName} : {enemyIndex}");
                     enemyIndex++;
                 }
-                Debug.Log($"Current level's enemy indices determined. Total number of enemies: {Enemies.Count}");
+                Debug.Log($"Current level's enemy indices determined. Total number of enemies: {enemies.Count}");
             }
         }
 
@@ -93,7 +75,7 @@ namespace NightVision.Patches
                 return;
 
             pressedSpawnEnemy = true;
-            foreach (TextMeshProUGUI enemy in EnemyNames)
+            foreach (TextMeshProUGUI enemy in enemyNames)
             {
                 GameObject newGameObject = new GameObject(enemy.text)
                 {

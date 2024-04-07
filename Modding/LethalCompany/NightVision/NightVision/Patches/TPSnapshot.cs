@@ -26,12 +26,14 @@ namespace NightVision.Patches
 
         public static void SavePosition()
         {
-            pos = GameNetworkManager.Instance.localPlayerController.transform.position;
+            if(Player.LocalPlayer() != null)
+                pos = Player.LocalPlayer().transform.position;
         }
         
         public static void LoadPosition()
         {
-            GameNetworkManager.Instance.localPlayerController.TeleportPlayer(pos);
+            if(Player.LocalPlayer() != null)
+                Player.LocalPlayer().TeleportPlayer(pos);
         }
     }
 }

@@ -27,32 +27,39 @@ namespace NightVision
             }
 
             mls=BepInEx.Logging.Logger.CreateLogSource(modGUID);
-
             mls.LogInfo("GUB MOD STARTEDEDEDEDEDEDED.");
 
+            // Base
             harmony.PatchAll(typeof(NightVisionBase));
             harmony.PatchAll(typeof(NightVisionPatch));
+
+            // Player
+            harmony.PatchAll(typeof(Player));
             harmony.PatchAll(typeof(GrabDistancePatch));
             harmony.PatchAll(typeof(GodMode));
-            harmony.PatchAll(typeof(RemoveOriginalDebugs));
             harmony.PatchAll(typeof(NoClip));
-            harmony.PatchAll(typeof(FlowermanUnstuck));
-            harmony.PatchAll(typeof(SpawnEnemy));
+            harmony.PatchAll(typeof(BoomDead));
             harmony.PatchAll(typeof(TeleportInBuildingEntrance));
             harmony.PatchAll(typeof(TeleportToShip));
+            harmony.PatchAll(typeof(TPSnapshot));
             harmony.PatchAll(typeof(RevivePlayers));
-            harmony.PatchAll(typeof(IgnoreTwoHands));
             harmony.PatchAll(typeof(ThirdPerson));
+            harmony.PatchAll(typeof(XPGain));
+            harmony.PatchAll(typeof(StartLever));
+            harmony.PatchAll(typeof(WhatAreLocks));
+            harmony.PatchAll(typeof(IgnoreTwoHands));
             if(!Chainloader.PluginInfos.ContainsKey("FlipMods.BetterStamina"))
                 harmony.PatchAll(typeof(InfiniteStamina)); // don't load if better stamina is installed, causes awake() error
             //harmony.PatchAll(typeof(NoWeight));
             //harmony.PatchAll(typeof(MovementSpeed));
-            harmony.PatchAll(typeof(XPGain));
+
+            // Enemy
+            harmony.PatchAll(typeof(SpawnEnemy));
+            harmony.PatchAll(typeof(FlowermanUnstuck));
             //harmony.PatchAll(typeof(MaskedEnemyUnstuck));
-            harmony.PatchAll(typeof(TPSnapshot));
-            harmony.PatchAll(typeof(StartLever));
-            harmony.PatchAll(typeof(BoomDead));
-            harmony.PatchAll(typeof(WhatAreLocks));
+
+            // Debug
+            harmony.PatchAll(typeof(RemoveOriginalDebugs));
         }
     }
 }

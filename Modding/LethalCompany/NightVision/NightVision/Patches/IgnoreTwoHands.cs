@@ -19,7 +19,7 @@ namespace NightVision.Patches
 
         [HarmonyPrefix]
         [HarmonyPatch("Update")]
-        static void Update(PlayerControllerB __instance)
+        static void Update()
         {
             //__instance.hoveringOverTrigger.twoHandedItemAllowed = true;
             //__instance.twoHanded = false;
@@ -28,14 +28,16 @@ namespace NightVision.Patches
 
         [HarmonyPrefix]
         [HarmonyPatch("BeginGrabObject")]
-        static void BeginGrabObject(PlayerControllerB __instance)
+        static void BeginGrabObject()
         {
-            __instance.twoHanded = false;
+            if(Player.LocalPlayer() != null)
+                Player.LocalPlayer().twoHanded = false;
+
         }
 
         [HarmonyPrefix]
         [HarmonyPatch("GrabObject")]
-        static void GrabObject(PlayerControllerB __instance)
+        static void GrabObject()
         {
             //__instance.twoHanded = false;
         }
@@ -49,9 +51,10 @@ namespace NightVision.Patches
 
         [HarmonyPrefix]
         [HarmonyPatch("ScrollMouse_performed")]
-        static void ScrollMouse_performed(PlayerControllerB __instance)
+        static void ScrollMouse_performed()
         {
-            __instance.twoHanded = false;
+            if(Player.LocalPlayer() != null)
+                Player.LocalPlayer().twoHanded = false;
         }
     }
 }

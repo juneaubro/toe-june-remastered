@@ -11,16 +11,17 @@ namespace NightVision.Patches
     {
         public static ModHotkey tpKey = new ModHotkey(MouseAndKeyboard.Numpad3, ThirdPersonToggle);
         public static bool g_enabled = false;
-        public static PlayerControllerB? playerController;
-        private static Camera? _camera;
         public static Camera? fpCamera;
         public static Canvas? canvas;
+
+        private static Camera? _camera;
+        private static PlayerControllerB? _playerController;
         private static bool setOGCam = false;
         private static bool setCam = false;
 
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
-        public static void Awake(PlayerControllerB __instance)
+        public static void Awake()
         {
 
 
@@ -30,23 +31,24 @@ namespace NightVision.Patches
         [HarmonyPrefix]
         public static void Update()
         {
-            if (GameNetworkManager.Instance.localPlayerController == null)
+            if (Player.LocalPlayer() == null)
                 return;
+
+            if (_playerController == null)
+                _playerController = Player.LocalPlayer();
 
             tpKey.Update();
 
-            playerController = GameNetworkManager.Instance.localPlayerController;
-
             if (!setOGCam)
             {
-                fpCamera = playerController.gameplayCamera;
+                fpCamera = _playerController.gameplayCamera;
                 setOGCam = true;
             }
 
             if (!setCam)
             {
                 _camera = new GameObject("3rdPersonMod").AddComponent<Camera>();
-                _camera.gameObject.transform.SetParent(playerController.transform);
+                _camera.gameObject.transform.SetParent(_playerController.transform);
                 _camera.nearClipPlane = 0.01f;
                 _camera.cullingMask = Int32.MaxValue;
                 _camera.hideFlags = HideFlags.HideAndDontSave;
@@ -59,7 +61,7 @@ namespace NightVision.Patches
 
         public static void ThirdPersonToggle()
         {
-            if (playerController == null || canvas == null)
+            if (_playerController == null || canvas == null)
                 return;
 
             g_enabled = !g_enabled;
@@ -75,7 +77,7 @@ namespace NightVision.Patches
                 canvas.worldCamera = fpCamera;
             }
 
-            playerController.thisPlayerModelArms.enabled = !playerController.thisPlayerModelArms.enabled;
+            _playerController.thisPlayerModelArms.enabled = !_playerController.thisPlayerModelArms.enabled;
         }
 
         

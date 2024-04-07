@@ -15,20 +15,24 @@ namespace NightVision.Patches
     {
         public static ModHotkey unlock = new ModHotkey(MouseAndKeyboard.H, UnlockDoor, true);
         public static bool unlockPressed = false;
-        static PlayerControllerB plr;
+        static PlayerControllerB _plr;
 
         [HarmonyPostfix]
         [HarmonyPatch("Update")]
-        static void Update(PlayerControllerB __instance)
+        static void Update()
         {
-            plr = GameNetworkManager.Instance.localPlayerController;
+            if (Player.LocalPlayer() == null)
+                return;
+
+            if(_plr == null)
+                _plr = Player.LocalPlayer();
+
             unlock.Update();
             if(unlockPressed)
             {
-                RaycastHit hit;
-                Vector3 ori = new Vector3(plr.transform.position.x, plr.transform.position.y, plr.transform.position.z);
-                Vector3 oric = new Vector3(plr.gameplayCamera.transform.position.x, plr.gameplayCamera.transform.position.y, plr.gameplayCamera.transform.position.z);
-                if (Physics.Raycast(oric + __instance.transform.forward * 1.1f, plr.gameplayCamera.transform.forward, out hit, float.MaxValue))
+                Vector3 ori = new Vector3(_plr.transform.position.x, _plr.transform.position.y, _plr.transform.position.z);
+                Vector3 oric = new Vector3(_plr.gameplayCamera.transform.position.x, _plr.gameplayCamera.transform.position.y, _plr.gameplayCamera.transform.position.z);
+                if (Physics.Raycast(oric + _plr.transform.forward * 1.1f, _plr.gameplayCamera.transform.forward, out var hit, float.MaxValue))
                 {
                     if (hit.transform.gameObject.GetComponentInParent<DoorLock>() != null)
                     {

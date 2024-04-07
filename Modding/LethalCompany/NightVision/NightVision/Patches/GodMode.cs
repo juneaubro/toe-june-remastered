@@ -16,26 +16,30 @@ namespace NightVision.Patches
 
         [HarmonyPatch(typeof(PlayerControllerB),"Awake")]
         [HarmonyPostfix]
-        static void Awake(PlayerControllerB __instance)
+        static void Awake()
         {
             isGodMode = false;
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         [HarmonyPrefix]
-        static void Update(PlayerControllerB __instance)
+        static void Update()
         {
-            lp = __instance;
+            if(lp == null)
+                lp = Player.LocalPlayer();
+
             godKey.Update();
             godKey2.Update();
-            if (isGodMode)
-            {
-                __instance.takingFallDamage = false;
-            }
             dethKey.Update();
-            if (wantstodie&&!isGodMode)
+
+            if (isGodMode && lp != null)
             {
-                GameNetworkManager.Instance.localPlayerController.KillPlayer(Vector3.zero);
+                lp.takingFallDamage = false;
+            }
+
+            if (wantstodie && !isGodMode && lp != null)
+            {
+                lp.KillPlayer(Vector3.zero);
                 wantstodie = false;
             }
         }
@@ -43,19 +47,22 @@ namespace NightVision.Patches
         public static void toggleGodMode()
         {
             isGodMode = !isGodMode;
-            if (isGodMode)
-                Debug.Log("GodMode on.");
-            else
-            {
-                Debug.Log("GodMode off.");
 
-            }
+            Debug.Log($"GodMode {isGodMode}");
+
+            //if (isGodMode)
+            //    Debug.Log("GodMode on.");
+            //else
+            //{
+            //    Debug.Log("GodMode off.");
+            //}
         }
 
         public static void killThyself()
         {
             wantstodie = true;
-            Debug.Log("Wants to die: "+wantstodie);
+
+            Debug.Log($"Wants to die: {wantstodie}");
         }
 
         [HarmonyPrefix]
@@ -70,7 +77,7 @@ namespace NightVision.Patches
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PlayerControllerB), "PlayerHitGroundEffects")]
-        static void setPostPlayerHitGroundEffects(PlayerControllerB __instance)
+        static void setPostPlayerHitGroundEffects()
         {
             if (!isGodMode)
             {
