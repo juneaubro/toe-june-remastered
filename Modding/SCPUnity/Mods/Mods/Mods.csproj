@@ -48,8 +48,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Unity.InputSystem">
-      <HintPath>Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity_Data\Managed\Unity.InputSystem.dll</HintPath>
+    <Reference Include="Unity.InputSystem, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Our_References\Unity.InputSystem.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity_Data\Managed\UnityEngine.dll</HintPath>
@@ -60,13 +61,118 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ModHotKey.cs" />
+    <Compile Include="obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs" />
     <Compile Include="Patches\TestMod.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="bin\Debug\0Harmony.dll" />
+    <Content Include="bin\Debug\0Harmony.xml" />
+    <Content Include="bin\Debug\Animancer.dll" />
+    <Content Include="bin\Debug\Assembly-CSharp-firstpass.dll" />
+    <Content Include="bin\Debug\Assembly-CSharp.dll" />
+    <Content Include="bin\Debug\AstarPathfindingProject.dll" />
+    <Content Include="bin\Debug\BepInEx.dll" />
+    <Content Include="bin\Debug\BepInEx.xml" />
+    <Content Include="bin\Debug\CameraFilterEffects.dll" />
+    <Content Include="bin\Debug\ch.sycoforge.Decal.dll" />
+    <Content Include="bin\Debug\CommandSystem.dll" />
+    <Content Include="bin\Debug\DOTween.dll" />
+    <Content Include="bin\Debug\DOTweenPro.dll" />
+    <Content Include="bin\Debug\Mods.dll" />
+    <Content Include="bin\Debug\Mods.pdb" />
+    <Content Include="bin\Debug\Mono.Cecil.dll" />
+    <Content Include="bin\Debug\MonoMod.RuntimeDetour.dll" />
+    <Content Include="bin\Debug\MonoMod.RuntimeDetour.xml" />
+    <Content Include="bin\Debug\MonoMod.Utils.dll" />
+    <Content Include="bin\Debug\MonoMod.Utils.xml" />
+    <Content Include="bin\Debug\Newtonsoft.Json.dll" />
+    <Content Include="bin\Debug\Pathfinding.ClipperLib.dll" />
+    <Content Include="bin\Debug\Pathfinding.Ionic.Zip.Reduced.dll" />
+    <Content Include="bin\Debug\Pathfinding.Poly2Tri.dll" />
+    <Content Include="bin\Debug\Rewired_Core.dll" />
+    <Content Include="bin\Debug\Rewired_Windows.dll" />
+    <Content Include="bin\Debug\Sirenix.OdinInspector.Attributes.dll" />
+    <Content Include="bin\Debug\Sirenix.Serialization.Config.dll" />
+    <Content Include="bin\Debug\Sirenix.Serialization.dll" />
+    <Content Include="bin\Debug\Sirenix.Utilities.dll" />
+    <Content Include="bin\Debug\Unity.InputSystem.dll" />
+    <Content Include="bin\Debug\Unity.Postprocessing.Runtime.dll" />
+    <Content Include="bin\Debug\Unity.TextMeshPro.dll" />
+    <Content Include="bin\Debug\Unity.Timeline.dll" />
+    <Content Include="bin\Debug\UnityEngine.AccessibilityModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.AIModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.AndroidJNIModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.AnimationModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.ARModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.AssetBundleModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.AudioModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.ClothModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.ClusterInputModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.ClusterRendererModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.CoreModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.CrashReportingModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.DirectorModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.dll" />
+    <Content Include="bin\Debug\UnityEngine.DSPGraphModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.GameCenterModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.GridModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.ImageConversionModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.IMGUIModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.InputLegacyModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.InputModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.JSONSerializeModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.LocalizationModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.ParticleSystemModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.PerformanceReportingModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.Physics2DModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.PhysicsModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.ScreenCaptureModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.SharedInternalsModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.SpriteMaskModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.SpriteShapeModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.StreamingModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.SubsystemsModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.TerrainModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.TerrainPhysicsModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.TextCoreModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.TextRenderingModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.TilemapModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UI.dll" />
+    <Content Include="bin\Debug\UnityEngine.UIElementsModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UIModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UNETModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UnityAnalyticsModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UnityConnectModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UnityWebRequestAssetBundleModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UnityWebRequestAudioModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UnityWebRequestModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UnityWebRequestTextureModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.UnityWebRequestWWWModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.VehiclesModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.VFXModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.VideoModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.VRModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.WindModule.dll" />
+    <Content Include="bin\Debug\UnityEngine.XRModule.dll" />
+    <Content Include="obj\Debug\Mods.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\Mods.dll" />
+    <Content Include="obj\Debug\Mods.pdb" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="obj\Debug\Mods.csproj.AssemblyReference.cache" />
+    <None Include="obj\Debug\Mods.csproj.CopyComplete" />
+    <None Include="obj\Debug\Mods.csproj.CoreCompileInputs.cache" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\Release\" />
+    <Folder Include="obj\Debug\TempPE\" />
+    <Folder Include="Our_References\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="E:\github\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Mods.dll" ( copy /Y "$(TargetPath)" "Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Joesmod\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "other\$(TargetFileName)")</PostBuildEvent>
+    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="C:\github\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Mods.dll" ( copy /Y "$(TargetPath)" "Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Joesmod\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "other\$(TargetFileName)")</PostBuildEvent>
   </PropertyGroup>
 </Project>
