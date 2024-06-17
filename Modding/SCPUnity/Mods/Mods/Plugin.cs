@@ -33,7 +33,9 @@ namespace Mods
             harmony.PatchAll(typeof(ModsBase));
 
             //Debug
-            harmony.PatchAll(typeof(TestMod));
+            //harmony.PatchAll(typeof(TestMod));
+            harmony.PatchAll(typeof(MainMenuPatch));
+            harmony.PatchAll(typeof(EnginePatch));
         }
     }
 }

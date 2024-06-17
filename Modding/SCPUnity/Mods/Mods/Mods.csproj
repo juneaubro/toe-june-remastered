@@ -58,10 +58,16 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>E:\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ModHotKey.cs" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs" />
+    <Compile Include="Patches\EnginePatch.cs" />
+    <Compile Include="Patches\MainMenuPatch.cs" />
     <Compile Include="Patches\TestMod.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -173,6 +179,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="C:\github\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Mods.dll" ( copy /Y "$(TargetPath)" "Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Joesmod\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "other\$(TargetFileName)")</PostBuildEvent>
+    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="C:\github\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Mods.dll" ( copy /Y "$(TargetPath)" "Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Joesmod\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "E:\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Mods\$(TargetFileName)" &amp;&amp; "E:\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity.exe")</PostBuildEvent>
   </PropertyGroup>
 </Project>
