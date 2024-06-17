@@ -68,7 +68,6 @@
     <Compile Include="obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs" />
     <Compile Include="Patches\EnginePatch.cs" />
     <Compile Include="Patches\MainMenuPatch.cs" />
-    <Compile Include="Patches\TestMod.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
