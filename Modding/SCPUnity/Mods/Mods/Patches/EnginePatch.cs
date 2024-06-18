@@ -10,6 +10,7 @@ namespace Mods.Patches
         [HarmonyPostfix]
         static void Awake()
         {
+            Helpers.ClearLogFiles();
             Debug.Log("Testing TestMod message!!!!!!\nTesting TestMod message!!!!!!\nTesting TestMod message!!!!!!\nTesting TestMod message!!!!!!\nTesting TestMod message!!!!!!\nTesting TestMod message!!!!!!\nTesting TestMod message!!!!!!\nTesting TestMod message!!!!!!\nTesting TestMod message!!!!!!");
         }
 

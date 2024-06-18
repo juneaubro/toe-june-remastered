@@ -52,15 +52,17 @@ namespace Mods
             for(int i = 0; i < gameObject.transform.childCount; i++)
             {
                 PrintGameObjectInfo(gameObject.transform.GetChild(i).gameObject);
-                _level--;
             }
+            _level--;
         }
+
         /// <summary>
         /// Prints string to console and optionally to a log file in [root game folder]/Logs/
         /// It will create a folder in the Logs folder for each new class
         /// and a seperate text file for each method name that uses the Print() method
         /// </summary>
-        public static void Print(string stringToPrint, bool logToOutputFile = false, LogType logType = LogType.Log, LogOption logOption = LogOption.None, params object[] args)
+        public static void Print(string stringToPrint, bool logToOutputFile = false, LogType logType = LogType.Log,
+            LogOption logOption = LogOption.None, params object[] args)
         {
             Debug.LogFormat(logType, logOption, null, stringToPrint, args);
 
@@ -75,7 +77,9 @@ namespace Mods
                     className = methodInfo.ReflectedType.Name;
                 }
 
-                DirectoryInfo dirInfo = Directory.CreateDirectory(Directory.GetCurrentDirectory() + @"\Logs\" + className + @"\");
+                string logDirectory = Directory.GetCurrentDirectory() + @"\Logs\";
+                Directory.CreateDirectory(logDirectory);
+                DirectoryInfo dirInfo = Directory.CreateDirectory(logDirectory + className + @"\");
                 string directory = dirInfo.FullName;
 
                 using (StreamWriter outputFile = new StreamWriter(Path.Combine(directory, methodName), true))
@@ -85,6 +89,16 @@ namespace Mods
 
                 }
             }
+        }
+
+        /// <summary>
+        /// Clears [root game folder]/Logs/ folder
+        /// </summary>
+        public static void ClearLogFiles()
+        {
+            string logDirectory = Directory.GetCurrentDirectory() + @"\Logs\";
+            if(Directory.Exists(logDirectory))
+                Directory.Delete(logDirectory, true);
         }
     }
 }

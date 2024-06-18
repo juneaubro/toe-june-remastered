@@ -202,7 +202,6 @@ Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\CameraFilterE
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\DOTween.dll
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Sirenix.Serialization.dll
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\UnityEngine.ClothModule.dll
-Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Unity.TextMeshPro.dll
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\CommandSystem.dll
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Rewired_Core.dll
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Unity.Postprocessing.Runtime.dll
@@ -267,3 +266,4 @@ Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\obj\Debug\Mods.csproj.C
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\obj\Debug\Mods.csproj.Up2Date
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\obj\Debug\Mods.dll
 Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\obj\Debug\Mods.pdb
+Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Mods\Mods\bin\Debug\Mods.dll.config

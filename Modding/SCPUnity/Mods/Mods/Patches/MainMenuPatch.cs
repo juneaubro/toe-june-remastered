@@ -1,92 +1,124 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using System.Collections;
+using Tayx.Graphy.Utils.NumString;
+using UnityEngine.InputSystem.EnhancedTouch;
 
 namespace Mods.Patches
 {
     [HarmonyPatch(typeof(MainMenu))]
     internal class MainMenuPatch
     {
-        private static GameObject _newText;
-        private static Text _text;
-        private static bool _textSet = false;
+        private static GameObject buttonStack = null;
+        private static bool _buttonCreated = false;
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch("Start")]
         [HarmonyPostfix]
-        static void Awake(MainMenu __instance)
+        static void Start(MainMenu __instance)
         {
-            if (!_textSet)
+            if (!_buttonCreated)
             {
-                _textSet = true;
+                _buttonCreated = true;
 
-                _newText = new GameObject("newText");
-                _text = _newText.AddComponent<Text>();
-                _text.text = "Test";
-                _newText.transform.SetParent(__instance.transform);
-                Debug.Log("_newText parent was set\n\n\n\n\n\n\n");
+                // Get ButtonStack GameObject
+                buttonStack = __instance.mainMenuButtons.transform.GetChild(0).gameObject;
 
+                // Make new GameObject to add to ButtonStack
+                GameObject newObject = new GameObject("NewButton");
+                GameObject copyObject = buttonStack.transform.GetChild(1).gameObject; // newGameButton
+                newObject.transform.localScale = copyObject.transform.localScale;
 
-                Button button = __instance.mainMenuButtons.AddComponent<Button>();
-                ColorBlock colorBlock = new ColorBlock
+                // Ensure new GameObject is integrated into the Main Menu buttons
+                newObject.transform.SetParent(buttonStack.transform);
+
+                // Copy button style from another button to new GameObject's button
+                Button button = newObject.AddComponent<Button>();
+                button.transform.SetParent(newObject.transform);
+                Button copyButton = copyObject.GetComponent<Button>();
+                Button.ButtonClickedEvent newEvent = new Button.ButtonClickedEvent();
+                // TODO: insert method to call when clicking button
+                newEvent.AddListener(__instance.OnExit);
+                button.onClick = newEvent;
+                button.animationTriggers = copyButton.animationTriggers;
+                button.colors = copyButton.colors;
+                button.transition = copyButton.transition;
+                button.transform.localScale = copyButton.transform.localScale;
+                button.transform.position = new Vector3(copyButton.transform.position.x,
+                    button.transform.position.y, copyButton.transform.position.z);
+
+                // Copy image style from another image to new GameObject's image
+                Image image = newObject.AddComponent<Image>();
+                image.transform.SetParent(newObject.transform);
+                Image copyImage = copyObject.GetComponent<Image>();
+                image.color = copyImage.color;
+                image.alphaHitTestMinimumThreshold = copyImage.alphaHitTestMinimumThreshold;
+                image.fillAmount = copyImage.fillAmount;
+                image.fillCenter = copyImage.fillCenter;
+                image.fillClockwise = copyImage.fillClockwise;
+                image.fillMethod = copyImage.fillMethod;
+                image.fillOrigin = copyImage.fillOrigin;
+                image.material = copyImage.material;
+                image.overrideSprite = copyImage.overrideSprite;
+                image.pixelsPerUnitMultiplier = copyImage.pixelsPerUnitMultiplier;
+                image.preserveAspect = copyImage.preserveAspect;
+                image.type = copyImage.type;
+                image.sprite = copyImage.sprite;
+                image.useSpriteMesh = copyImage.useSpriteMesh;
+
+                // Create sub-object to hold text
+                GameObject textObject = new GameObject
                 {
-                    normalColor = Color.blue,
-                    pressedColor = Color.yellow,
-                    highlightedColor = Color.cyan
+                    transform =
+                    {
+                        localScale = newObject.transform.localScale
+                    }
                 };
-                button.colors = colorBlock;
-                button.transform.SetParent(__instance.transform);
-            }
+                textObject.transform.SetParent(newObject.transform);
 
-            Helpers.PrintGameObjectInfo(__instance.mainMenuButtons, true);
-            Helpers.Print("OPAISJDFOIASJFGIOAWERTOIUEWAT", true);
+                // Copy text style another other text to new GameObject's text
+                TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
+                TextMeshProUGUI copyText = copyObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>(); // newGameText's TextMeshProUGUI
+                text.transform.SetParent(textObject.transform);
+                text.alignment = copyText.alignment;
+                text.font = copyText.font;
+                text.fontStyle = copyText.fontStyle;
+                text.fontSize = copyText.fontSize;
+                text.fontMaterial = copyText.fontMaterial;
+                text.fontMaterials = copyText.fontMaterials;
+                text.fontSharedMaterial = copyText.fontSharedMaterial;
+                text.fontSharedMaterials = copyText.fontSharedMaterials;
+                text.fontSizeMax = copyText.fontSizeMax;
+                text.fontSizeMin = copyText.fontSizeMin;
+                text.fontWeight = copyText.fontWeight;
+                text.autoSizeTextContainer = copyText.autoSizeTextContainer;
+                text.maskOffset = copyText.maskOffset;
+                text.alpha = copyText.alpha;
+                text.color = copyText.color;
+                text.faceColor = copyText.faceColor;
+                text.colorGradient = copyText.colorGradient;
+                text.colorGradientPreset = copyText.colorGradientPreset;
+                text.margin = copyText.margin;
+                text.material = copyText.material;
+                text.enableAutoSizing = copyText.enableAutoSizing;
+                text.enableCulling = copyText.enableCulling;
+                text.enableKerning = copyText.enableKerning;
+                text.enableVertexGradient = copyText.enableVertexGradient;
+                text.enableWordWrapping = false;
+                text.enabled = copyText.enabled;
+                text.characterSpacing = copyText.characterSpacing;
+                text.extraPadding = copyText.extraPadding;
+                text.geometrySortingOrder = copyText.geometrySortingOrder;
+                text.havePropertiesChanged = copyText.havePropertiesChanged;
+                text.horizontalMapping = copyText.horizontalMapping;
+                text.outlineColor = copyText.outlineColor;
+                text.transform.localScale = copyText.transform.localScale;
+                text.text = "MULTIPLAYER";
+
+                //Helpers.PrintGameObjectInfo(buttonStack, true);
+            }
         }
     }
 }
-
-// this hierarchy was taking too long to list out and
-// is why i made the best damn logging tool i have made yet in Helpers.Print()
-/* MAIN MENU HIERARCHY
-MainMenu
-    + mainMenuButtons
-        - Components
-            + Button, Rect
-        - Children (GameObjects)
-            + ButtonStack
-                - Components
-                    + RectTransform, VecticalLayoutGroup
-                - Children (GameObjects)
-                    + QuickCustomStack
-                        - Components
-                            + RectTransform, HorizontalLayerGroup, LayoutElement
-                        - Children (GameObjects)
-                            + quickGameButton
-                    + newGameButton
-                        - Components
-                            + RectTransform, CanvasRenderer, Image, Button
-                        - Children (GameObjects)
-                            + newGameText
-                    + loadGameButton
-                        - Components
-                            + RectTransform, CanvasRenderer, Image, Button
-                        - Children (GameObjects)
-                            + loadGameText
-                    + optionsButton
-                        - Components
-                            + RectTransform, CanvasRenderer, Image, Button
-                        - Children (GameObjects)
-                            + optionsText
-                    + extrasButton
-                        - Components
-                            + RectTransform, CanvasRenderer, Image, Button
-                        - Children (GameObjects)
-                            + extrasText
-            + ExitButton
-                - Components
-                    + RectTransform, CanvasRenderer, Image, Button
-                - Children (GameObjects)
-                    + ExitText
-                        - Components
-                            + RectTransform, CanvasRenderer, TextMeshProUGUI, I2.Loc.Localize
-                        - Children (GameObjects)
-                            + TMP SubMeshUI [TitilliumWeb-Regular SDF Material + LiberationSans-Regular SDF Atlas]
-*/
