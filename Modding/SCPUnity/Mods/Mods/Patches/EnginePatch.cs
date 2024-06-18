@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using UnityEngine;
-using static Mods.Patches.MainMenuPatch;
 
 namespace Mods.Patches
 {
