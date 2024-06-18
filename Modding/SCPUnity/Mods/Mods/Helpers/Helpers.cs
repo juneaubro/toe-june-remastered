@@ -1,22 +1,26 @@
-﻿using System;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
-using static SECTR_Member;
+using Debug = UnityEngine.Debug;
+
 
 namespace Mods
 {
     internal class Helpers
     {
+
         private static int _level = 0;
         private static bool firstRun = true;
         private static int childrenCount = 0;
         private static Component[] components;
-        //private static string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        private static StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurrentDirectory(), "PrintGameObjectInfo.txt"));
-        
-        // 
-        public static void PrintGameObjectInfo(GameObject gameObject)
+
+        /// <summary>
+        /// Recursively prints all children and components attached to the gameObject, optionally printing to a log file
+        /// </summary>
+        [MethodImpl(MethodImplOptions.NoInlining)] // Force no inlining for stack walking in Print()
+        public static void PrintGameObjectInfo(GameObject gameObject, bool printToLog = true)
         {
             string tabs = "";
             _level++;
@@ -28,41 +32,59 @@ namespace Mods
             if (firstRun)
             {
                 firstRun = false;
-                Debug.LogWarning($"PrintGameObjectInfo: {gameObject}");
-                outputFile.WriteLine($"PrintGameObjectInfo: {gameObject}");
+                Print($"PrintGameObjectInfo: {gameObject}", printToLog);
             }
             else
             {
-                // child object, not original one
-                Debug.Log($"{tabs}{gameObject}");
-                outputFile.WriteLine($"{tabs}{gameObject}");
+                // child object is printed here to help with formatting
+                Print($"{tabs}{gameObject}", printToLog);
                 tabs += "\t";
             }
 
-            Debug.LogWarning($"{tabs}Components:");
-            outputFile.WriteLine($"{tabs}Components:");
+            Print($"{tabs}Components:", printToLog);
             components = gameObject.GetComponents<Component>();
             foreach (Component c in components)
             {
-                Debug.Log($"{tabs}\t{c.GetType()}");
-                outputFile.WriteLine($"{tabs}\t{c.GetType()}");
+                Print($"{tabs}\t{c.GetType()}", printToLog);
             }
 
-            Debug.LogWarning($"{tabs}Children:");
-            outputFile.WriteLine($"{tabs}Children:");
+            Print($"{tabs}Children:", printToLog);
             for(int i = 0; i < gameObject.transform.childCount; i++)
             {
-                GameObject child = gameObject.transform.GetChild(i).gameObject;
-                //Debug.Log($"{tabs}\t{child}");
-                PrintGameObjectInfo(child);
+                PrintGameObjectInfo(gameObject.transform.GetChild(i).gameObject);
                 _level--;
             }
         }
-
-        ~Helpers()
+        /// <summary>
+        /// Prints string to console and optionally to a log file in [root game folder]/Logs/
+        /// It will create a folder in the Logs folder for each new class
+        /// and a seperate text file for each method name that uses the Print() method
+        /// </summary>
+        public static void Print(string stringToPrint, bool logToOutputFile = false, LogType logType = LogType.Log, LogOption logOption = LogOption.None, params object[] args)
         {
-            // need to close application to close file
-            outputFile.Close();
+            Debug.LogFormat(logType, logOption, null, stringToPrint, args);
+
+            if (logToOutputFile)
+            {
+                MethodBase methodInfo = new StackFrame(1, true).GetMethod(); // stack walk to get method info for calling function
+                string className = "";
+                string methodName = methodInfo.Name + ".txt";
+
+                if (methodInfo.ReflectedType != null)
+                {
+                    className = methodInfo.ReflectedType.Name;
+                }
+
+                DirectoryInfo dirInfo = Directory.CreateDirectory(Directory.GetCurrentDirectory() + @"\Logs\" + className + @"\");
+                string directory = dirInfo.FullName;
+
+                using (StreamWriter outputFile = new StreamWriter(Path.Combine(directory, methodName), true))
+                {
+                    outputFile.WriteLine(stringToPrint);
+                    outputFile.Close();
+
+                }
+            }
         }
     }
 }

@@ -83,7 +83,8 @@ namespace Mods.Patches
                 button.transform.SetParent(__instance.transform);
             }
 
-            Helpers.PrintGameObjectInfo(__instance.mainMenuButtons);
+            Helpers.PrintGameObjectInfo(__instance.mainMenuButtons, true);
+            Helpers.Print("OPAISJDFOIASJFGIOAWERTOIUEWAT", true);
 
             //Component[] components = __instance.mainMenuButtons.GetComponentsInChildren(typeof(Component));
 
