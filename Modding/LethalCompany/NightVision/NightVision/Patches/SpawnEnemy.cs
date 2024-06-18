@@ -39,7 +39,7 @@ namespace NightVision.Patches
                 pressedSpawnEnemy = false;
                 Debug.Log("Spawned ENEMY GUB.");
                 Vector3 fixedPos = Player.LocalPlayer().transform.position + Player.LocalPlayer().transform.forward * 5f;
-                __instance.SpawnEnemyOnServer(fixedPos, 0, 13);
+                __instance.SpawnEnemyOnServer(fixedPos, 0, -1);
             }
 
             // Determine enemy indices at runtime to match current level's indices
