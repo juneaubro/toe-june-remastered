@@ -5,6 +5,11 @@ VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mods", "Mods\Mods.csproj", "{C497B4A9-5B28-4914-B0B8-2EF7C0A9556A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8F89C00C-C7A7-4951-9306-0E0EFFB5F7D6}"
+	ProjectSection(SolutionItems) = preProject
+		Mods\Helpers\Helpers.cs = Mods\Helpers\Helpers.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

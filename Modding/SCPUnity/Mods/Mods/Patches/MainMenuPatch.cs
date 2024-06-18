@@ -1,22 +1,52 @@
 ﻿using HarmonyLib;
-using Rewired.UI.ControlMapper;
 using UnityEngine;
 using UnityEngine.UI;
 
-//+ MainMenu.mainMenuButtons
-//     - Components
-//             + Button, Rect
-//     - Children (GameObjects)
-//             + ButtonStack
-//                     - Components
-//                             + RectTransform, VecticalLayoutGroup
-//                     - Children (GameObjects)
-//                             + QuickCustomStack, newGameButton, loadGameButton, optionsButton, extrasButton
-//             + ExitButton
-//                     - Components
-//                             + RectTransform, CanvasRenderer, Image, Button
-//                     - Children (GameObjects)
-//                             + ExitText
+/* MAIN MENU HIERARCHY
+MainMenu
+    + mainMenuButtons
+        - Components
+            + Button, Rect
+        - Children (GameObjects)
+            + ButtonStack
+                - Components
+                    + RectTransform, VecticalLayoutGroup
+                - Children (GameObjects)
+                    + QuickCustomStack
+                        - Components
+                            + RectTransform, HorizontalLayerGroup, LayoutElement
+                        - Children (GameObjects)
+                            + quickGameButton
+                    + newGameButton
+                        - Components
+                            + RectTransform, CanvasRenderer, Image, Button
+                        - Children (GameObjects)
+                            + newGameText
+                    + loadGameButton
+                        - Components
+                            + RectTransform, CanvasRenderer, Image, Button
+                        - Children (GameObjects)
+                            + loadGameText
+                    + optionsButton
+                        - Components
+                            + RectTransform, CanvasRenderer, Image, Button
+                        - Children (GameObjects)
+                            + optionsText
+                    + extrasButton
+                        - Components
+                            + RectTransform, CanvasRenderer, Image, Button
+                        - Children (GameObjects)
+                            + extrasText
+            + ExitButton
+                - Components
+                    + RectTransform, CanvasRenderer, Image, Button
+                - Children (GameObjects)
+                    + ExitText
+                        - Components
+                            + RectTransform, CanvasRenderer, TextMeshProUGUI, I2.Loc.Localize
+                        - Children (GameObjects)
+                            + TMP SubMeshUI [TitilliumWeb-Regular SDF Material + LiberationSans-Regular SDF Atlas]
+*/
 
 namespace Mods.Patches
 {
@@ -53,19 +83,38 @@ namespace Mods.Patches
                 button.transform.SetParent(__instance.transform);
             }
 
-            Component[] components = __instance.mainMenuButtons.GetComponentsInChildren(typeof(Component));
+            Helpers.PrintGameObjectInfo(__instance.mainMenuButtons);
 
-            for (int i = 0; i < __instance.mainMenuButtons.transform.childCount; i++)
-            {
-                GameObject g = __instance.mainMenuButtons.transform.GetChild(i).gameObject;
-                Debug.Log(g);
+            //Component[] components = __instance.mainMenuButtons.GetComponentsInChildren(typeof(Component));
 
-                for (int j = 0; j < g.transform.childCount; j++)
-                {
-                    GameObject go = g.transform.GetChild(j).gameObject;
-                    Debug.Log($"\t\t{go}");
-                }
-            }
+            //for (int i = 0; i < __instance.mainMenuButtons.transform.childCount; i++) // ButtonStack, ExitButton
+            //{
+            //    GameObject g = __instance.mainMenuButtons.transform.GetChild(i).gameObject;
+            //    Debug.Log(g);
+
+            //    Debug.Log("\tChildren: ");
+            //    for (int j = 0; j < g.transform.childCount; j++) // QuickCustomStack, newGameButton, loadGameButton, optionsButton, extrasButton, ExitText
+            //    {
+            //        GameObject go = g.transform.GetChild(j).gameObject;
+            //        Debug.Log($"\t\t{go}");
+
+            //        components = go.GetComponents<Component>();
+            //        Debug.Log("\t\t\tComponents: ");
+            //        foreach (Component c in components)
+            //        {
+            //            Debug.Log($"\t\t\t\t{c}");
+            //        }
+
+            //        Debug.Log("\t\t\tChildren: ");
+            //        for (int k = 0; k < go.transform.childCount; k++)
+            //        {
+            //            GameObject gob = go.transform.GetChild(k).gameObject;
+            //            Debug.Log($"\t\t\t\t{gob}");
+            //        }
+
+            //        Debug.Log("-----------------------------------------------------");
+            //    }
+            //}
         }
     }
 }
