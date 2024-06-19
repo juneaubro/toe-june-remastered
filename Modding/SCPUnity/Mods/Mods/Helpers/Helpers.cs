@@ -60,6 +60,7 @@ namespace Mods
         /// Prints string to console and optionally to a log file in [root game folder]/Logs/
         /// It will create a folder in the Logs folder for each new class
         /// and a seperate text file for each method name that uses the Print() method
+        /// If txt file is given the wrong name, try decorating the method with [MethodImpl(MethodImplOptions.NoInlining)]
         /// </summary>
         public static void Print(string stringToPrint, bool logToOutputFile = false, LogType logType = LogType.Log,
             LogOption logOption = LogOption.None, params object[] args)
@@ -99,6 +100,16 @@ namespace Mods
             string logDirectory = Directory.GetCurrentDirectory() + @"\Logs\";
             if(Directory.Exists(logDirectory))
                 Directory.Delete(logDirectory, true);
+        }
+
+        public static T CopyComponent<T>(T original, ref GameObject destination) where T : Component
+        {
+            var type = original.GetType();
+            var copy = destination.AddComponent(type);
+            var fields = type.GetFields();
+            foreach (var field in fields) 
+                field.SetValue(copy, field.GetValue(original));
+            return copy as T;
         }
     }
 }
