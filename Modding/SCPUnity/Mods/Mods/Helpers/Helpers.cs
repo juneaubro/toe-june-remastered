@@ -103,7 +103,8 @@ namespace Mods
         }
 
         /// <summary>
-        /// Copy a component to a different GameObject
+        /// Copy a component to a different GameObject if it doesn't already exist,
+        /// otherwise copy all fields to the existing component on the destination GameObject
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="original">Original component to copy</param>
@@ -112,11 +113,19 @@ namespace Mods
         public static T CopyComponent<T>(T original, ref GameObject destination) where T : Component
         {
             var type = original.GetType();
-            var copy = destination.AddComponent(type);
             var fields = type.GetFields();
-            foreach (var field in fields) 
-                field.SetValue(copy, field.GetValue(original));
-            return copy as T;
+            if (destination.GetComponent(type) == null)
+            {
+                var copy = destination.AddComponent(type);
+                foreach (var field in fields) 
+                    field.SetValue(copy, field.GetValue(original));
+                return copy as T;
+            } 
+            var copy2 = destination.GetComponent(type);
+            foreach (var field in fields)
+                field.SetValue(copy2, field.GetValue(original));
+
+            return copy2 as T;
         }
     }
 }
