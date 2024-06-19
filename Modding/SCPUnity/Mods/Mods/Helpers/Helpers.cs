@@ -69,7 +69,16 @@ namespace Mods
 
             if (logToOutputFile)
             {
-                MethodBase methodInfo = new StackFrame(2, true).GetMethod(); // stack walk to get method info for calling function
+                MethodBase methodInfo;
+
+                // using PrintGameObjectInfo while printing to a log file
+                // should give the method calling it rather than PrintGameObjectInfo itself
+                // r e  c   u    r     s      i       o        n
+                for (int framesToSkip = 1; (methodInfo = new StackFrame(framesToSkip, true).GetMethod()).Name == "PrintGameObjectInfo"; ++framesToSkip)
+                {
+                    // an "interesting" way to inline methodInfo initialization without having to remake the StackFrame when broken from loop
+                }
+
                 string className = "";
                 string methodName = methodInfo.Name + ".txt";
 
@@ -106,7 +115,7 @@ namespace Mods
         /// Copy a component to a different GameObject if it doesn't already exist,
         /// otherwise copy all fields to the existing component on the destination GameObject
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Component</typeparam>
         /// <param name="original">Original component to copy</param>
         /// <param name="destination">Destination GameObject to copy component to</param>
         /// <returns>Copied component</returns>
