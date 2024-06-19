@@ -69,7 +69,7 @@ namespace Mods
 
             if (logToOutputFile)
             {
-                MethodBase methodInfo = new StackFrame(1, true).GetMethod(); // stack walk to get method info for calling function
+                MethodBase methodInfo = new StackFrame(2, true).GetMethod(); // stack walk to get method info for calling function
                 string className = "";
                 string methodName = methodInfo.Name + ".txt";
 
@@ -102,6 +102,13 @@ namespace Mods
                 Directory.Delete(logDirectory, true);
         }
 
+        /// <summary>
+        /// Copy a component to a different GameObject
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="original">Original component to copy</param>
+        /// <param name="destination">Destination GameObject to copy component to</param>
+        /// <returns>Copied component</returns>
         public static T CopyComponent<T>(T original, ref GameObject destination) where T : Component
         {
             var type = original.GetType();
