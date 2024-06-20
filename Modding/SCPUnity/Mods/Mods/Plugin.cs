@@ -9,6 +9,7 @@ namespace Mods
     public class ModsBase : BaseUnityPlugin
     {
         private const string modGUID = "JoesMod";
+        // vote to change name to SCMP :P (Secure, Contain, Multiply, and Protect)
         private const string modName = "JoesMod";
         private const string modVersion = "1.0.0.0";
 
