@@ -12,8 +12,6 @@ namespace Mods
     {
 
         private static int _level = 0;
-        private static bool firstRun = true;
-        private static int childrenCount = 0;
         private static Component[] components;
 
         /// <summary>
@@ -22,22 +20,26 @@ namespace Mods
         [MethodImpl(MethodImplOptions.NoInlining)] // Force no inlining for stack walking in Print()
         public static void PrintGameObjectInfo(GameObject gameObject, bool printToLog = true)
         {
+            string additionalTab = "";
             string tabs = "";
-            _level++;
-            for (int j = 0; j < _level; j++)
-            {
-                tabs += "\t";
-            }
 
-            if (firstRun)
+            if (_level == 0)
             {
-                firstRun = false;
                 Print($"PrintGameObjectInfo: {gameObject}", printToLog);
             }
             else
             {
-                // child object is printed here to help with formatting
-                Print($"{tabs}{gameObject}", printToLog);
+                // why does this work
+                for (int j = 0; j < _level; j++)
+                {
+                    tabs += "\t";
+                }
+            }
+
+            _level++;
+
+            for (int j = 0; j < _level; j++)
+            {
                 tabs += "\t";
             }
 
@@ -47,13 +49,19 @@ namespace Mods
             {
                 Print($"{tabs}\t{c.GetType()}", printToLog);
             }
-
-            Print($"{tabs}Children:", printToLog);
-            for(int i = 0; i < gameObject.transform.childCount; i++)
+            if (gameObject.transform.childCount != 0)
             {
-                PrintGameObjectInfo(gameObject.transform.GetChild(i).gameObject);
+                Print($"{tabs}Children:", printToLog);
+
+                for (int i = 0; i < gameObject.transform.childCount; i++)
+                {
+                    GameObject child = gameObject.transform.GetChild(i).gameObject;
+                    Print($"{tabs}\t{child}", printToLog);
+                    PrintGameObjectInfo(child);
+                    _level--;
+                }
             }
-            _level--;
+
         }
 
         /// <summary>
