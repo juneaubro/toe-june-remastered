@@ -71,8 +71,7 @@ crashlytics-build.properties
 
 Modding/LethalCompany/NightVision/NightVision/bin/Debug/
 Modding/LethalCompany/NightVision/NightVision/obj/Debug/
-Modding/SCPUnity/Mods/Mods/bin/*
-Modding/SCPUnity/Mods/Mods/obj/*
-Modding/SCPUnity/JoesMod/bin/Debug/
 /Modding/SCPUnity/Mods/Mods/bin/Debug
 /Modding/SCPUnity/Mods/Mods/obj/Debug
+/Modding/SCPUnity/SCMP/bin/
+/Modding/SCPUnity/SCMP/obj/
