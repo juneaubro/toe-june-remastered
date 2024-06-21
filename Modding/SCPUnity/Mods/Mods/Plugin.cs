@@ -8,10 +8,10 @@ namespace Mods
     [BepInPlugin(modGUID, modName, modVersion)]
     public class ModsBase : BaseUnityPlugin
     {
-        private const string modGUID = "JoesMod";
+        private const string modGUID = "toejune.joesmod";
         // vote to change name to SCMP :P (Secure, Contain, Multiply, and Protect)
         private const string modName = "JoesMod";
-        private const string modVersion = "1.0.0.0";
+        public const string modVersion = "1.0.0.0"; // must follow semver
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -33,7 +33,6 @@ namespace Mods
             harmony.PatchAll(typeof(ModsBase));
 
             //Debug
-            //harmony.PatchAll(typeof(TestMod));
             harmony.PatchAll(typeof(MainMenuPatch));
             harmony.PatchAll(typeof(EnginePatch));
         }

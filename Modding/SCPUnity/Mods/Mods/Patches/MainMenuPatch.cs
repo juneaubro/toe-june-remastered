@@ -1,5 +1,5 @@
-﻿using HarmonyLib;
-using TheraBytes.BetterUi;
+﻿using BepInEx;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -11,6 +11,10 @@ namespace Mods.Patches
     {
         private static GameObject _multiplayerMenuObject = null;
         private static GameObject _buttonStack = null;
+        private static GameObject _backgroundImage = null;
+        private static GameObject _version = null;
+        private static GameObject _officeMarketingMessage = null;
+        private static GameObject _patreonButton = null;
         private static bool _buttonCreated = false;
         private static MainMenu _instance = null;
 
@@ -26,17 +30,26 @@ namespace Mods.Patches
             if (!_buttonCreated)
             {
                 _buttonCreated = true;
-
-                CreateMultiplayerButton();
-                CreateMultiplayerMenu();
+                Initialize();
             }
+        }
+
+        private static void Initialize()
+        {
+            _buttonStack = _instance.mainMenuButtons.transform.GetChild(0).gameObject;
+            _backgroundImage = _instance.transform.GetChild(0).GetChild(2).GetChild(0).gameObject;
+            _version = _instance.transform.GetChild(0).GetChild(1).GetChild(1).gameObject;
+            _officeMarketingMessage = _instance.transform.GetChild(0).GetChild(1).GetChild(2).gameObject;
+            _patreonButton = _instance.transform.GetChild(0).GetChild(1).GetChild(3).gameObject;
+
+            SetVersionText();
+            CreateMultiplayerButton();
+            CreateMultiplayerMenu();
         }
 
         // Multiplayer button on Main Menu
         private static void CreateMultiplayerButton()
         {
-            _buttonStack = _instance.mainMenuButtons.transform.GetChild(0).gameObject;
-
             GameObject copyObject = _buttonStack.transform.GetChild(1).gameObject;
             GameObject newObject = Object.Instantiate(copyObject);
             newObject.name = "MultiplayerButton";
@@ -49,6 +62,7 @@ namespace Mods.Patches
             button.onClick = newEvent;
 
             TextMeshProUGUI text = button.transform.GetComponentInChildren<TextMeshProUGUI>();
+            text.name = "MultiplayerButtonText";
             text.text = "MULTIPLAYER";
         }
 
@@ -76,10 +90,13 @@ namespace Mods.Patches
             {
                 name = "MultiplayerMenuObject"
             };
-            _multiplayerMenuObject.transform.SetParent(_instance.transform);
+            _multiplayerMenuObject.transform.SetParent(_instance.transform.GetChild(0));
             _multiplayerMenuObject.transform.position = Vector3.zero;
             _multiplayerMenuObject.transform.localPosition = Vector3.zero;
             _multiplayerMenuObject.SetActive(false);
+
+            // BACKGROUND IMAGE
+            _backgroundImage.transform.SetParent(_multiplayerMenuObject.transform);
 
             // MULTIPLAYER BACK BUTTON
             GameObject backButtonObject =
@@ -87,6 +104,7 @@ namespace Mods.Patches
             backButtonObject.transform.SetParent(_multiplayerMenuObject.transform);
             // copied position is negative (????) so need to manually set its position
             backButtonObject.transform.position = new Vector3(Screen.width * 0.1f, Screen.height * 0.2f);
+            backButtonObject.name = "BackButtonObject";
 
             Button backButton = backButtonObject.GetComponent<Button>();
             Button.ButtonClickedEvent clickedEvent = new Button.ButtonClickedEvent();
@@ -125,16 +143,16 @@ namespace Mods.Patches
         public static void ShowMultiplayerMenu(bool state)
         {
             _multiplayerMenuObject.SetActive(state);
-
             _instance.mainMenuButtons.SetActive(!state);
             _instance.mainMenuLogo.SetActive(!state);
-            // need to find a way to hide/show private fields (_supportDevelopmentButton & _patreonSection)
-            if (state)
-            {
-                // need to call this to hide the remaining private fields
-                _instance.OnLoadGame();
-                _instance.loadGameScreen.SetActive(false);
-            }
+            _officeMarketingMessage.SetActive(!state);
+            _patreonButton.SetActive(!state);
+        }
+
+        private static void SetVersionText()
+        {
+            
+            _version.GetComponent<TextMeshProUGUI>().text += $"\nSCMP Version {ModsBase.modVersion}";
         }
     }
 }
