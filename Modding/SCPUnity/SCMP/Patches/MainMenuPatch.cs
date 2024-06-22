@@ -318,6 +318,7 @@ namespace SCMP.Patches
             NavigationButtons.SetActive(true);
             ChangeNavigationButtonText("Start Game");
             ShowJoinMenu(false);
+            StartServer();
         }
 
         // Listener method when Join button on Multiplayer menu is clicked
@@ -486,6 +487,11 @@ namespace SCMP.Patches
         {
             NameInputFieldObject.SetActive(state);
             NameTextObject.SetActive(state);
+        }
+
+        private static void StartServer()
+        {
+
         }
 
         private static void ChangeNavigationButtonText(string text)

@@ -7,6 +7,10 @@
     <Version>0.0.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
+    <RepositoryUrl>https://github.com/juneaubro/toe-june-remastered</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/juneaubro/toe-june-remastered/tree/main/Modding/SCPUnity/SCMP</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Configurations>Debug;Release;ServerDebug;ServerRelease</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +31,9 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="NetCoreServer">
+      <HintPath>References\NetCoreServer.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.InputSystem">
       <HintPath>References\Unity.InputSystem.dll</HintPath>
     </Reference>
@@ -43,6 +50,13 @@
   
   <ItemGroup>
     <Folder Include="Helpers\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
