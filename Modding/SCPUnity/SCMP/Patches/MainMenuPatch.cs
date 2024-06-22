@@ -41,6 +41,12 @@ namespace SCMP.Patches
         public static TMP_InputField IpInputField;
         public static GameObject IpTextObject;
         public static TextMeshProUGUI IpText;
+        public static TextMeshProUGUI IpPlaceholderText;
+        public static GameObject PortInputFieldObject;
+        public static TMP_InputField PortInputField;
+        public static GameObject PortTextObject;
+        public static TextMeshProUGUI PortText;
+        public static TextMeshProUGUI PortPlaceholderText;
         public static GameObject NavigationButtons;
 
         [HarmonyPatch("Start")]
@@ -192,10 +198,34 @@ namespace SCMP.Patches
             IpInputField = IpInputFieldObject.GetComponent<TMP_InputField>();
             IpInputField.onValueChanged.AddListener(delegate { ValidateIP();});
             IpInputFieldObject.name = "IpInputField";
-            TextMeshProUGUI ipPlaceholderText =
-                IpInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
-            ipPlaceholderText.text = "ex. 127.0.0.1";
+            IpPlaceholderText = IpInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
+            IpPlaceholderText.text = "ex. 127.0.0.1";
 
+            // MULTIPLAYER MENU : PORT TEXT
+            PortTextObject =
+                Object.Instantiate(_instance.transform.GetChild(0).GetChild(2).GetChild(1).GetChild(0).gameObject);
+            PortTextObject.SetActive(false);
+            PortTextObject.transform.SetParent(_multiplayerMenuObject.transform);
+            PortTextObject.transform.localPosition =
+                new Vector3(IpTextObject.transform.localPosition.x,
+                    IpTextObject.transform.localPosition.y - (Screen.height * 0.085f), 0);
+            PortTextObject.name = "PortText";
+            PortText = PortTextObject.GetComponent<TextMeshProUGUI>();
+            PortText.text = "Port";
+
+            // MULTIPLAYER MENU : PORT INPUT FIELD
+            PortInputFieldObject = Object.Instantiate(_inputField);
+            PortInputFieldObject.SetActive(false);
+            PortInputFieldObject.transform.SetParent(_multiplayerMenuObject.transform);
+            PortInputFieldObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x,
+                PortTextObject.transform.localPosition.y - (Screen.height * 0.0425f), 0);
+            PortInputField = PortInputFieldObject.GetComponent<TMP_InputField>();
+            PortInputField.contentType = TMP_InputField.ContentType.IntegerNumber;
+            PortInputField.onValueChanged.AddListener(delegate { ValidatePort(); });
+            PortInputFieldObject.name = "PortInputField";
+            PortPlaceholderText =
+                PortInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
+            PortPlaceholderText.text = "ex. 10293";
 
             // MULTIPLAYER MENU : NAVIGATION BUTTONS
             GameObject navCopy = _instance.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
@@ -208,7 +238,6 @@ namespace SCMP.Patches
             NavigationButtons.transform.GetChild(1).GetComponent<Button>().onClick = cancelEvent;
             NavigationButtons.SetActive(false);
             NavigationButtons.name = "NavigationButtons";
-
         }
 
         // Hide Main Menu objects, show Multiplayer Menu objects
@@ -234,6 +263,7 @@ namespace SCMP.Patches
 
             NavigationButtons.SetActive(false);
             IpInputFieldObject.SetActive(false);
+            IpTextObject.SetActive(false);
             ShowHostJoinButtons(true);
             ShowMultiplayerMenu(true);
         }
@@ -243,9 +273,9 @@ namespace SCMP.Patches
         {
             ShowMultiplayerMenu(false);
             ShowHostJoinButtons(true);
-            IpInputFieldObject.SetActive(false);
-            IpTextObject.SetActive(false);
             NavigationButtons.SetActive(false);
+            ShowIpField(false);
+            ShowPortField(false);
         }
 
         private static void OnHostClicked()
@@ -253,22 +283,24 @@ namespace SCMP.Patches
             ShowHostJoinButtons(false);
             NavigationButtons.SetActive(true);
             ChangeNavigationButtonText("Start Game");
+            ShowIpField(false);
+            ShowPortField(false);
         }
 
         private static void OnJoinClicked()
         {
             ShowHostJoinButtons(false);
             NavigationButtons.SetActive(true);
-            IpInputFieldObject.SetActive(true);
-            IpTextObject.SetActive(true);
             ChangeNavigationButtonText("Join Game");
+            ShowIpField(true);
+            ShowPortField(true);
         }
 
         private static void OnCancelClicked()
         {
             NavigationButtons.SetActive(false);
-            IpInputFieldObject.SetActive(false);
-            IpTextObject.SetActive(false);
+            ShowIpField(false);
+            ShowPortField(false);
             ShowHostJoinButtons(true);
         }
 
@@ -341,16 +373,43 @@ namespace SCMP.Patches
             //}
         }
 
-        private static bool IsDecimalFormat(string input)
+        private static void ValidatePort()
         {
-            Decimal dummy;
-            return Decimal.TryParse(input, out dummy);
+            if (string.IsNullOrEmpty(PortInputField.text))
+                return;
+
+            // If the parsed number is greater than the max port number or a negative,
+            // remove the character
+            if (uint.TryParse(PortInputField.text, out var number))
+            {
+                if (number > 65535)
+                {
+                    PortInputField.text = PortInputField.text.Remove(PortInputField.text.Length - 1);
+                }
+            }
+            else if (PortInputField.text[PortInputField.text.Length - 1] == '-')
+            {
+                PortInputField.text = PortInputField.text.Remove(PortInputField.text.Length - 1);
+            }
+
         }
 
         private static void ShowHostJoinButtons(bool state)
         {
             JoinButtonObject.SetActive(state);
             HostButtonObject.SetActive(state);
+        }
+
+        private static void ShowIpField(bool state)
+        {
+            IpInputFieldObject.SetActive(state);
+            IpTextObject.SetActive(state);
+        }
+
+        private static void ShowPortField(bool state)
+        {
+            PortInputFieldObject.SetActive(state);
+            PortTextObject.SetActive(state);
         }
 
         private static void ChangeNavigationButtonText(string text)
