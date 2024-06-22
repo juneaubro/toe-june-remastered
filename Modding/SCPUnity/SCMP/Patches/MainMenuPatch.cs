@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System.Text.RegularExpressions;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -17,8 +18,12 @@ namespace SCMP.Patches
         private static GameObject _menuButton = null;
         private static GameObject _inputField = null;
         private static bool _buttonCreated = false;
+        private static bool _hostClicked = false;
         private static MainMenu _instance = null;
 
+        public static GameObject MultiplayerButtonObject;
+        public static Button MultiplayerButton;
+        public static TextMeshProUGUI MultiplayerButtonText;
         public static GameObject MultiplayerTitleObject;
         public static TextMeshProUGUI MultiplayerTitleText;
         public static GameObject HostButtonObject;
@@ -31,6 +36,10 @@ namespace SCMP.Patches
         public static Button BackButton;
         public static TextMeshProUGUI BackButtonText;
         public static GameObject IpInputFieldObject;
+        public static TMP_InputField IpInputField;
+        public static GameObject IpTextObject;
+        public static TextMeshProUGUI IpText;
+        public static GameObject NavigationButtons;
 
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
@@ -67,19 +76,19 @@ namespace SCMP.Patches
         private static void CreateMultiplayerButton()
         {
             GameObject copyObject = _buttonStack.transform.GetChild(1).gameObject;
-            GameObject newObject = Object.Instantiate(copyObject);
-            newObject.name = "MultiplayerButton";
-            newObject.transform.SetParent(_buttonStack.transform);
-            newObject.transform.localScale = copyObject.transform.localScale; // it does not automatically change this to scale after setting new parent
+            MultiplayerButtonObject = Object.Instantiate(copyObject);
+            MultiplayerButtonObject.name = "MultiplayerButton";
+            MultiplayerButtonObject.transform.SetParent(_buttonStack.transform);
+            MultiplayerButtonObject.transform.localScale = copyObject.transform.localScale; // it does not automatically change this to scale after setting new parent
 
-            Button button = newObject.transform.GetComponent<Button>();
+            MultiplayerButton = MultiplayerButtonObject.transform.GetComponent<Button>();
             Button.ButtonClickedEvent newEvent = new Button.ButtonClickedEvent();
             newEvent.AddListener(OnMultiplayerClicked);
-            button.onClick = newEvent;
+            MultiplayerButton.onClick = newEvent;
 
-            TextMeshProUGUI text = button.transform.GetComponentInChildren<TextMeshProUGUI>();
-            text.name = "MultiplayerButtonText";
-            text.text = "MULTIPLAYER";
+            MultiplayerButtonText = MultiplayerButton.transform.GetComponentInChildren<TextMeshProUGUI>();
+            MultiplayerButtonText.name = "MultiplayerButtonText";
+            MultiplayerButtonText.text = "MULTIPLAYER";
         }
 
         // Multiplayer menu after clicking Multiplayer button on Main Menu
@@ -161,19 +170,41 @@ namespace SCMP.Patches
             JoinButtonText.fontSize = 38f;
             JoinButtonText.text = "JOIN";
 
+            // MULTIPLAYER MENU : IP TEXT
+            IpTextObject =
+                Object.Instantiate(_instance.transform.GetChild(0).GetChild(2).GetChild(1).GetChild(0).gameObject);
+            IpTextObject.SetActive(false);
+            IpTextObject.transform.SetParent(_multiplayerMenuObject.transform);
+            IpTextObject.transform.localPosition =
+                _instance.transform.GetChild(0).GetChild(2).GetChild(1).GetChild(0).localPosition;
+            IpTextObject.name = "IpText";
+            IpText = IpTextObject.GetComponent<TextMeshProUGUI>();
+            IpText.text = "Server Address";
+
             // MULTIPLAYER MENU : IP INPUT FIELD
             IpInputFieldObject = Object.Instantiate(_inputField);
             IpInputFieldObject.SetActive(false);
             IpInputFieldObject.transform.SetParent(_multiplayerMenuObject.transform);
             IpInputFieldObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x, 
-                (Screen.height * 0.1f) + _backgroundImage.transform.localPosition.y, 0);
+                IpTextObject.transform.localPosition.y - (Screen.height * 0.0425f), 0);
+            IpInputField = IpInputFieldObject.GetComponent<TMP_InputField>();
+            IpInputField.onValueChanged.AddListener(delegate { ValidateIP();});
             IpInputFieldObject.name = "IpInputField";
             TextMeshProUGUI ipPlaceholderText =
                 IpInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
-            ipPlaceholderText.text = "ex. 100.20.300.40";
+            ipPlaceholderText.text = "ex. 111.33.222.244";
 
-            // MULTIPLAYER MENU : IP TEXT
 
+            // MULTIPLAYER MENU : NAVIGATION BUTTONS
+            NavigationButtons = Object.Instantiate(_instance.transform.GetChild(0).GetChild(2).GetChild(2).gameObject);
+            NavigationButtons.transform.SetParent(_multiplayerMenuObject.transform);
+            NavigationButtons.transform.localPosition =
+                _instance.transform.GetChild(0).GetChild(2).GetChild(2).localPosition;
+            Button.ButtonClickedEvent cancelEvent = new Button.ButtonClickedEvent();
+            cancelEvent.AddListener(OnCancelClicked);
+            NavigationButtons.transform.GetChild(1).GetComponent<Button>().onClick = cancelEvent;
+            NavigationButtons.SetActive(false);
+            NavigationButtons.name = "NavigationButtons";
 
         }
 
@@ -198,6 +229,9 @@ namespace SCMP.Patches
             if(_multiplayerMenuObject == null)
                 CreateMultiplayerMenu();
 
+            NavigationButtons.SetActive(false);
+            IpInputFieldObject.SetActive(false);
+            ShowHostJoinButtons(true);
             ShowMultiplayerMenu(true);
         }
 
@@ -207,23 +241,54 @@ namespace SCMP.Patches
             ShowMultiplayerMenu(false);
             ShowHostJoinButtons(true);
             IpInputFieldObject.SetActive(false);
+            IpTextObject.SetActive(false);
+            NavigationButtons.SetActive(false);
         }
 
         private static void OnHostClicked()
         {
             ShowHostJoinButtons(false);
+            NavigationButtons.SetActive(true);
+            ChangeNavigationButtonText("Start Game");
         }
 
         private static void OnJoinClicked()
         {
             ShowHostJoinButtons(false);
+            NavigationButtons.SetActive(true);
             IpInputFieldObject.SetActive(true);
+            IpTextObject.SetActive(true);
+            ChangeNavigationButtonText("Join Game");
+        }
+
+        private static void OnCancelClicked()
+        {
+            NavigationButtons.SetActive(false);
+            IpInputFieldObject.SetActive(false);
+            IpTextObject.SetActive(false);
+            ShowHostJoinButtons(true);
+        }
+
+        private static void ValidateIP()
+        {
+            if (string.IsNullOrEmpty(IpInputField.text))
+                return;
+
+            if(!Regex.IsMatch(IpInputField.text, @"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b") && IpInputField.text.Length > 0 && IpInputField.text != "")
+            {
+                IpInputField.text = IpInputField.text.Remove(IpInputField.text.Length - 1);
+            }
         }
 
         private static void ShowHostJoinButtons(bool state)
         {
             JoinButtonObject.SetActive(state);
             HostButtonObject.SetActive(state);
+        }
+
+        private static void ChangeNavigationButtonText(string text)
+        {
+            NavigationButtons.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = text;
         }
 
         private static void SetVersionText()
