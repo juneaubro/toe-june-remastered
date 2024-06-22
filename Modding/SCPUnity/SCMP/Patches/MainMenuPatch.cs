@@ -1,8 +1,10 @@
-﻿using System.Text.RegularExpressions;
-using HarmonyLib;
+﻿using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
+using System.Text.RegularExpressions;
+using Object = UnityEngine.Object;
 
 namespace SCMP.Patches
 {
@@ -269,15 +271,79 @@ namespace SCMP.Patches
             ShowHostJoinButtons(true);
         }
 
+        // This is probably the least efficient code I have purposefully written up until now
+        // but it works
         private static void ValidateIP()
         {
             if (string.IsNullOrEmpty(IpInputField.text))
                 return;
 
-            if(!Regex.IsMatch(IpInputField.text, @"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b") && IpInputField.text.Length > 0 && IpInputField.text != "")
+            string lastCharacter = IpInputField.text[IpInputField.text.Length - 1].ToString();
+
+            // If the last character is not a digit or a period and not a period as the first digit,
+            // remove the character
+            if (!Regex.IsMatch(lastCharacter, @"\d") && !Regex.IsMatch(lastCharacter, @"\.") || IpInputField.text[0] == '.')
             {
                 IpInputField.text = IpInputField.text.Remove(IpInputField.text.Length - 1);
             }
+
+            string subString = IpInputField.text;
+
+            // If the network address (first section of an IP) number is greater than 255, remove the character
+            if (uint.TryParse(subString, out uint number))
+            {
+                if (number > 255)
+                {
+                    IpInputField.text = IpInputField.text.Remove(IpInputField.text.Length - 1);
+                }
+            }
+            else
+            {
+                // Get the latest IP section typed and if the number is greater than 255, remove the character
+                if (IpInputField.text.Contains(".") && lastCharacter != ".")
+                {
+                    subString =
+                        IpInputField.text.Substring(IpInputField.text.LastIndexOf('.') + 1);
+                    number = 0;
+
+                    if (uint.TryParse(subString, out number))
+                    {
+                        if (number > 255)
+                        {
+                            IpInputField.text = IpInputField.text.Remove(IpInputField.text.Length - 1);
+                        }
+                    }
+                }
+
+                if (lastCharacter == ".")
+                {
+                    // If the previous character was a period and the most recent character is a period,
+                    // remove the character
+                    if (IpInputField.text.Length > 2 && IpInputField.text[IpInputField.text.Length - 2] == '.')
+                    {
+                        IpInputField.text = IpInputField.text.Remove(IpInputField.text.Length - 1);
+                    }
+
+                    // If there are already three periods and the latest character is a period, remove the character
+                    if (IpInputField.text.Split('.').Length - 1 > 3)
+                    {
+                        IpInputField.text = IpInputField.text.Remove(IpInputField.text.Length - 1);
+                    }
+                }
+
+            }
+
+            // Should go in a OnValidateInput listener method
+            //if(!Regex.IsMatch(IpInputField.text, @"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b") && IpInputField.text.Length > 0 && IpInputField.text != "")
+            //{
+            //    IpInputField.text = IpInputField.text.Remove(IpInputField.text.Length - 1);
+            //}
+        }
+
+        private static bool IsDecimalFormat(string input)
+        {
+            Decimal dummy;
+            return Decimal.TryParse(input, out dummy);
         }
 
         private static void ShowHostJoinButtons(bool state)
