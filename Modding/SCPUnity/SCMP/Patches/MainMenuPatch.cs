@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using HarmonyLib;
+﻿using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -16,10 +15,12 @@ namespace SCMP.Patches
         private static GameObject _officeMarketingMessage = null;
         private static GameObject _patreonButton = null;
         private static GameObject _menuButton = null;
-        //private static GameObject _inputField = null;
+        private static GameObject _inputField = null;
         private static bool _buttonCreated = false;
         private static MainMenu _instance = null;
 
+        public static GameObject MultiplayerTitleObject;
+        public static TextMeshProUGUI MultiplayerTitleText;
         public static GameObject HostButtonObject;
         public static Button HostButton;
         public static TextMeshProUGUI HostButtonText;
@@ -29,6 +30,7 @@ namespace SCMP.Patches
         public static GameObject BackButtonObject;
         public static Button BackButton;
         public static TextMeshProUGUI BackButtonText;
+        public static GameObject IpInputFieldObject;
 
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
@@ -53,8 +55,8 @@ namespace SCMP.Patches
             _patreonButton = _instance.transform.GetChild(0).GetChild(1).GetChild(3).gameObject;
             _menuButton = _instance.transform.GetChild(0).GetChild(2).GetChild(2).GetChild(3).GetChild(1)
                 .GetChild(1).gameObject;
-            //_inputField = _instance.transform.GetChild(0).GetChild(2).GetChild(1).GetChild(3).GetChild(0).GetChild(0)
-            //    .gameObject;
+            _inputField = _instance.transform.GetChild(0).GetChild(2).GetChild(2).GetChild(3).GetChild(0).GetChild(0)
+                .gameObject;
 
             SetVersionText();
             CreateMultiplayerButton();
@@ -89,7 +91,7 @@ namespace SCMP.Patches
             // MULTIPLAYER MENU : OBJECT
             _multiplayerMenuObject = new GameObject
             {
-                name = "MultiplayerMenuObject"
+                name = "MultiplayerMenu"
             };
             _multiplayerMenuObject.transform.SetParent(_instance.transform.GetChild(0));
             _multiplayerMenuObject.transform.position = Vector3.zero;
@@ -114,28 +116,22 @@ namespace SCMP.Patches
             BackButtonText.text = "BACK";
 
             // MULTIPLAYER MENU : TITLE TEXT
-            GameObject titleTextObject = new GameObject
-            {
-                name = "MultiplayerTitleText",
-                transform =
-                {
-                    localPosition = new Vector3(Screen.width * 0.5f, Screen.height * 0.9f, 0)
-                }
-            };
-            titleTextObject.transform.SetParent(_multiplayerMenuObject.transform);
-            TextMeshProUGUI multiplayerText = titleTextObject.AddComponent<TextMeshProUGUI>();
-            multiplayerText.text = "MULTIPLAYER";
-            multiplayerText.color = Color.white;
-            multiplayerText.fontSize = 88f;
-            multiplayerText.font = BackButtonText.font;
-            multiplayerText.fontMaterial = BackButtonText.fontMaterial;
-            multiplayerText.alignment = TextAlignmentOptions.Center;
-            multiplayerText.enableWordWrapping = false;
+            GameObject copyObject = _instance.transform.GetChild(0).GetChild(2).GetChild(0).gameObject;
+            MultiplayerTitleObject = Object.Instantiate(copyObject);
+            MultiplayerTitleObject.transform.SetParent(_multiplayerMenuObject.transform);
+            MultiplayerTitleObject.transform.position = copyObject.transform.position;
+            MultiplayerTitleText = MultiplayerTitleObject.GetComponent<TextMeshProUGUI>();
+            MultiplayerTitleText.transform.localPosition = new Vector3(copyObject.transform.localPosition.x, 
+                copyObject.transform.localPosition.y - (Screen.height * 0.065f), copyObject.transform.localPosition.z);
+            MultiplayerTitleText.enableWordWrapping = false;
+            MultiplayerTitleText.text = "MULTIPLAYER";
+
 
             // MULTIPLAYER MENU : HOST BUTTON
             HostButtonObject = Object.Instantiate(_menuButton);
             HostButtonObject.transform.SetParent(_multiplayerMenuObject.transform);
-            HostButtonObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x, (Screen.height * 0.1f) + _backgroundImage.transform.localPosition.y, 0);
+            HostButtonObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x, 
+                (Screen.height * 0.1f) + _backgroundImage.transform.localPosition.y, 0);
             HostButtonObject.transform.localScale *= 1.75f;
             HostButtonObject.name = "HostButton";
             HostButton = HostButtonObject.GetComponent<Button>();
@@ -151,7 +147,8 @@ namespace SCMP.Patches
             // MULTIPLAYER MENU : JOIN BUTTON
             JoinButtonObject = Object.Instantiate(_menuButton);
             JoinButtonObject.transform.SetParent(_multiplayerMenuObject.transform);
-            JoinButtonObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x, (Screen.height * -0.1f) + _backgroundImage.transform.localPosition.y, 0);
+            JoinButtonObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x, 
+                (Screen.height * -0.1f) + _backgroundImage.transform.localPosition.y, 0);
             JoinButtonObject.transform.localScale *= 1.75f;
             JoinButtonObject.name = "JoinButton";
             JoinButton = JoinButtonObject.GetComponent<Button>();
@@ -163,6 +160,21 @@ namespace SCMP.Patches
             JoinButtonText.gameObject.name = "JoinButtonText";
             JoinButtonText.fontSize = 38f;
             JoinButtonText.text = "JOIN";
+
+            // MULTIPLAYER MENU : IP INPUT FIELD
+            IpInputFieldObject = Object.Instantiate(_inputField);
+            IpInputFieldObject.SetActive(false);
+            IpInputFieldObject.transform.SetParent(_multiplayerMenuObject.transform);
+            IpInputFieldObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x, 
+                (Screen.height * 0.1f) + _backgroundImage.transform.localPosition.y, 0);
+            IpInputFieldObject.name = "IpInputField";
+            TextMeshProUGUI ipPlaceholderText =
+                IpInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
+            ipPlaceholderText.text = "ex. 100.20.300.40";
+
+            // MULTIPLAYER MENU : IP TEXT
+
+
         }
 
         // Hide Main Menu objects, show Multiplayer Menu objects
@@ -194,6 +206,7 @@ namespace SCMP.Patches
         {
             ShowMultiplayerMenu(false);
             ShowHostJoinButtons(true);
+            IpInputFieldObject.SetActive(false);
         }
 
         private static void OnHostClicked()
@@ -204,6 +217,7 @@ namespace SCMP.Patches
         private static void OnJoinClicked()
         {
             ShowHostJoinButtons(false);
+            IpInputFieldObject.SetActive(true);
         }
 
         private static void ShowHostJoinButtons(bool state)
