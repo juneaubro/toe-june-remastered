@@ -194,14 +194,15 @@ namespace SCMP.Patches
             IpInputFieldObject.name = "IpInputField";
             TextMeshProUGUI ipPlaceholderText =
                 IpInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
-            ipPlaceholderText.text = "ex. 111.33.222.244";
+            ipPlaceholderText.text = "ex. 127.0.0.1";
 
 
             // MULTIPLAYER MENU : NAVIGATION BUTTONS
-            NavigationButtons = Object.Instantiate(_instance.transform.GetChild(0).GetChild(2).GetChild(2).gameObject);
+            GameObject navCopy = _instance.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
+            NavigationButtons = Object.Instantiate(navCopy);
             NavigationButtons.transform.SetParent(_multiplayerMenuObject.transform);
             NavigationButtons.transform.localPosition =
-                _instance.transform.GetChild(0).GetChild(2).GetChild(2).localPosition;
+                new Vector3(navCopy.transform.localPosition.x, navCopy.transform.localPosition.y - (Screen.height * 0.09f), navCopy.transform.localPosition.z);
             Button.ButtonClickedEvent cancelEvent = new Button.ButtonClickedEvent();
             cancelEvent.AddListener(OnCancelClicked);
             NavigationButtons.transform.GetChild(1).GetComponent<Button>().onClick = cancelEvent;
