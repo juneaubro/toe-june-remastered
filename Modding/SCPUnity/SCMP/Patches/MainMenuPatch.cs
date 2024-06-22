@@ -20,7 +20,6 @@ namespace SCMP.Patches
         private static GameObject _menuButton = null;
         private static GameObject _inputField = null;
         private static bool _buttonCreated = false;
-        private static bool _hostClicked = false;
         private static MainMenu _instance = null;
 
         public static GameObject MultiplayerButtonObject;
@@ -87,7 +86,7 @@ namespace SCMP.Patches
             MultiplayerButtonObject = Object.Instantiate(copyObject);
             MultiplayerButtonObject.name = "MultiplayerButton";
             MultiplayerButtonObject.transform.SetParent(_buttonStack.transform);
-            MultiplayerButtonObject.transform.localScale = copyObject.transform.localScale; // it does not automatically change this to scale after setting new parent
+            MultiplayerButtonObject.transform.localScale = copyObject.transform.localScale;
 
             MultiplayerButton = MultiplayerButtonObject.transform.GetComponent<Button>();
             Button.ButtonClickedEvent newEvent = new Button.ButtonClickedEvent();
@@ -122,7 +121,7 @@ namespace SCMP.Patches
             BackButtonObject =
                 Object.Instantiate(_instance.mainMenuButtons.transform.GetChild(1).gameObject);
             BackButtonObject.transform.SetParent(_multiplayerMenuObject.transform);
-            BackButtonObject.transform.position = new Vector3(Screen.width * 0.1f, Screen.height * 0.2f);
+            BackButtonObject.transform.position = new Vector3(Screen.width * 0.05f, Screen.height * 0.2f);
             BackButtonObject.name = "BackButtonObject";
             BackButton = BackButtonObject.GetComponent<Button>();
             Button.ButtonClickedEvent backButtonClickedEvent = new Button.ButtonClickedEvent();
@@ -130,7 +129,9 @@ namespace SCMP.Patches
             BackButton.onClick.RemoveAllListeners();
             BackButton.onClick = backButtonClickedEvent;
             BackButtonText = BackButtonObject.GetComponentInChildren<TextMeshProUGUI>();
-            BackButtonText.text = "BACK";
+            BackButtonText.enableWordWrapping = false;
+            BackButtonText.fontSize *= 0.825f;
+            BackButtonText.text = "BACK TO MAIN MENU";
 
             // MULTIPLAYER MENU : TITLE TEXT
             GameObject copyObject = _instance.transform.GetChild(0).GetChild(2).GetChild(0).gameObject;
@@ -164,7 +165,7 @@ namespace SCMP.Patches
             // MULTIPLAYER MENU : JOIN BUTTON
             JoinButtonObject = Object.Instantiate(_menuButton);
             JoinButtonObject.transform.SetParent(_multiplayerMenuObject.transform);
-            JoinButtonObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x, 
+            JoinButtonObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x,
                 (Screen.height * -0.1f) + _backgroundImage.transform.localPosition.y, 0);
             JoinButtonObject.transform.localScale *= 1.75f;
             JoinButtonObject.name = "JoinButton";
@@ -196,7 +197,7 @@ namespace SCMP.Patches
             IpInputFieldObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x, 
                 IpTextObject.transform.localPosition.y - (Screen.height * 0.0425f), 0);
             IpInputField = IpInputFieldObject.GetComponent<TMP_InputField>();
-            IpInputField.onValueChanged.AddListener(delegate { ValidateIP();});
+            IpInputField.onValueChanged.AddListener(delegate { ValidateIp();});
             IpInputFieldObject.name = "IpInputField";
             IpPlaceholderText = IpInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
             IpPlaceholderText.text = "ex. 127.0.0.1";
@@ -278,6 +279,7 @@ namespace SCMP.Patches
             ShowPortField(false);
         }
 
+        // Listener method when Host button on Multiplayer menu is clicked
         private static void OnHostClicked()
         {
             ShowHostJoinButtons(false);
@@ -287,6 +289,7 @@ namespace SCMP.Patches
             ShowPortField(false);
         }
 
+        // Listener method when Join button on Multiplayer menu is clicked
         private static void OnJoinClicked()
         {
             ShowHostJoinButtons(false);
@@ -296,6 +299,7 @@ namespace SCMP.Patches
             ShowPortField(true);
         }
 
+        // Listener method when Cancel button on Multiplayer menu is clicked
         private static void OnCancelClicked()
         {
             NavigationButtons.SetActive(false);
@@ -306,7 +310,7 @@ namespace SCMP.Patches
 
         // This is probably the least efficient code I have purposefully written up until now
         // but it works
-        private static void ValidateIP()
+        private static void ValidateIp()
         {
             if (string.IsNullOrEmpty(IpInputField.text))
                 return;
