@@ -2,7 +2,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System;
 using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
 
@@ -20,6 +19,9 @@ namespace SCMP.Patches
         private static GameObject _menuButton = null;
         private static GameObject _inputField = null;
         private static bool _buttonCreated = false;
+        private static bool _validatingIp = false;
+        private static bool _validatingPort = false;
+        private static bool _validatingName = false;
         private static MainMenu _instance = null;
 
         public static GameObject MultiplayerButtonObject;
@@ -46,6 +48,11 @@ namespace SCMP.Patches
         public static GameObject PortTextObject;
         public static TextMeshProUGUI PortText;
         public static TextMeshProUGUI PortPlaceholderText;
+        public static GameObject NameInputFieldObject;
+        public static TMP_InputField NameInputField;
+        public static GameObject NameTextObject;
+        public static TextMeshProUGUI NameText;
+        public static TextMeshProUGUI NamePlaceholderText;
         public static GameObject NavigationButtons;
 
         [HarmonyPatch("Start")]
@@ -138,6 +145,7 @@ namespace SCMP.Patches
             MultiplayerTitleObject = Object.Instantiate(copyObject);
             MultiplayerTitleObject.transform.SetParent(_multiplayerMenuObject.transform);
             MultiplayerTitleObject.transform.position = copyObject.transform.position;
+            MultiplayerTitleObject.name = "MultiplayerTitle";
             MultiplayerTitleText = MultiplayerTitleObject.GetComponent<TextMeshProUGUI>();
             MultiplayerTitleText.transform.localPosition = new Vector3(copyObject.transform.localPosition.x, 
                 copyObject.transform.localPosition.y - (Screen.height * 0.065f), copyObject.transform.localPosition.z);
@@ -228,12 +236,38 @@ namespace SCMP.Patches
                 PortInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
             PortPlaceholderText.text = "ex. 10293";
 
+            // MULTIPLAYER MENU : NAME TEXT
+            NameTextObject =
+                Object.Instantiate(_instance.transform.GetChild(0).GetChild(2).GetChild(1).GetChild(0).gameObject);
+            NameTextObject.SetActive(false);
+            NameTextObject.transform.SetParent(_multiplayerMenuObject.transform);
+            NameTextObject.transform.localPosition =
+                new Vector3(IpTextObject.transform.localPosition.x,
+                    PortTextObject.transform.localPosition.y - (Screen.height * 0.085f), 0);
+            NameTextObject.name = "NameText";
+            NameText = NameTextObject.GetComponent<TextMeshProUGUI>();
+            NameText.text = "Name";
+
+            // MULTIPLAYER MENU : NAME INPUT FIELD
+            NameInputFieldObject = Object.Instantiate(_inputField);
+            NameInputFieldObject.SetActive(false);
+            NameInputFieldObject.transform.SetParent(_multiplayerMenuObject.transform);
+            NameInputFieldObject.transform.localPosition = new Vector3(_backgroundImage.transform.localPosition.x,
+                NameTextObject.transform.localPosition.y - (Screen.height * 0.0425f), 0);
+            NameInputField = NameInputFieldObject.GetComponent<TMP_InputField>();
+            NameInputField.onValueChanged.AddListener(delegate { ValidateName(); });
+            NameInputFieldObject.name = "NameInputField";
+            NamePlaceholderText =
+                NameInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
+            NamePlaceholderText.text = $"ex. SCMP_{UnityEngine.Random.RandomRangeInt(1, 999999999)}";
+
             // MULTIPLAYER MENU : NAVIGATION BUTTONS
             GameObject navCopy = _instance.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
             NavigationButtons = Object.Instantiate(navCopy);
             NavigationButtons.transform.SetParent(_multiplayerMenuObject.transform);
             NavigationButtons.transform.localPosition =
-                new Vector3(navCopy.transform.localPosition.x, navCopy.transform.localPosition.y - (Screen.height * 0.09f), navCopy.transform.localPosition.z);
+                new Vector3(navCopy.transform.localPosition.x, navCopy.transform.localPosition.y - (Screen.height * 0.09f), 
+                    navCopy.transform.localPosition.z);
             Button.ButtonClickedEvent cancelEvent = new Button.ButtonClickedEvent();
             cancelEvent.AddListener(OnCancelClicked);
             NavigationButtons.transform.GetChild(1).GetComponent<Button>().onClick = cancelEvent;
@@ -263,10 +297,9 @@ namespace SCMP.Patches
                 CreateMultiplayerMenu();
 
             NavigationButtons.SetActive(false);
-            IpInputFieldObject.SetActive(false);
-            IpTextObject.SetActive(false);
-            ShowHostJoinButtons(true);
             ShowMultiplayerMenu(true);
+            ShowHostJoinButtons(true);
+            ShowJoinMenu(false);
         }
 
         // Listener method when Back button on Main Menu is clicked
@@ -275,8 +308,7 @@ namespace SCMP.Patches
             ShowMultiplayerMenu(false);
             ShowHostJoinButtons(true);
             NavigationButtons.SetActive(false);
-            ShowIpField(false);
-            ShowPortField(false);
+            ShowJoinMenu(false);
         }
 
         // Listener method when Host button on Multiplayer menu is clicked
@@ -285,8 +317,7 @@ namespace SCMP.Patches
             ShowHostJoinButtons(false);
             NavigationButtons.SetActive(true);
             ChangeNavigationButtonText("Start Game");
-            ShowIpField(false);
-            ShowPortField(false);
+            ShowJoinMenu(false);
         }
 
         // Listener method when Join button on Multiplayer menu is clicked
@@ -295,16 +326,14 @@ namespace SCMP.Patches
             ShowHostJoinButtons(false);
             NavigationButtons.SetActive(true);
             ChangeNavigationButtonText("Join Game");
-            ShowIpField(true);
-            ShowPortField(true);
+            ShowJoinMenu(true);
         }
 
         // Listener method when Cancel button on Multiplayer menu is clicked
         private static void OnCancelClicked()
         {
             NavigationButtons.SetActive(false);
-            ShowIpField(false);
-            ShowPortField(false);
+            ShowJoinMenu(false);
             ShowHostJoinButtons(true);
         }
 
@@ -314,6 +343,8 @@ namespace SCMP.Patches
         {
             if (string.IsNullOrEmpty(IpInputField.text))
                 return;
+
+            _validatingIp = true;
 
             string lastCharacter = IpInputField.text[IpInputField.text.Length - 1].ToString();
 
@@ -370,6 +401,7 @@ namespace SCMP.Patches
 
             }
 
+            _validatingIp = false;
             // Should go in a OnValidateInput listener method
             //if(!Regex.IsMatch(IpInputField.text, @"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b") && IpInputField.text.Length > 0 && IpInputField.text != "")
             //{
@@ -381,6 +413,8 @@ namespace SCMP.Patches
         {
             if (string.IsNullOrEmpty(PortInputField.text))
                 return;
+
+            _validatingPort = true;
 
             // If the parsed number is greater than the max port number or a negative,
             // remove the character
@@ -396,12 +430,44 @@ namespace SCMP.Patches
                 PortInputField.text = PortInputField.text.Remove(PortInputField.text.Length - 1);
             }
 
+            _validatingPort = false;
+        }
+
+        private static void ValidateName()
+        {
+            if (string.IsNullOrEmpty(NameInputField.text))
+                return;
+
+            _validatingName = true;
+
+            string lastCharacter = Helpers.GetLastCharacter(NameInputField.text).ToString();
+
+            // If the last character is not a letter, digit, underscore, or the name exceeds 16 characters,
+            // remove the character
+            if (!Regex.IsMatch(lastCharacter, @"^\w+$") || NameInputField.text.Length > 16)
+            {
+                NameInputField.text = NameInputField.text.Remove(NameInputField.text.Length - 1);
+            }
+
+            _validatingName = false;
+        }
+
+        private static bool IsValidating()
+        {
+            return _validatingIp || _validatingPort || _validatingName;
         }
 
         private static void ShowHostJoinButtons(bool state)
         {
             JoinButtonObject.SetActive(state);
             HostButtonObject.SetActive(state);
+        }
+
+        private static void ShowJoinMenu(bool state)
+        {
+            ShowIpField(state);
+            ShowPortField(state);
+            ShowNameField(state);
         }
 
         private static void ShowIpField(bool state)
@@ -414,6 +480,12 @@ namespace SCMP.Patches
         {
             PortInputFieldObject.SetActive(state);
             PortTextObject.SetActive(state);
+        }
+
+        private static void ShowNameField(bool state)
+        {
+            NameInputFieldObject.SetActive(state);
+            NameTextObject.SetActive(state);
         }
 
         private static void ChangeNavigationButtonText(string text)

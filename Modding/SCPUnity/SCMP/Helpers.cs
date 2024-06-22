@@ -143,6 +143,17 @@ namespace SCMP
 
             return copy2 as T;
         }
+
+        /// <summary>
+        /// Get the last character of a string
+        /// </summary>
+        /// <param name="input">Input string</param>
+        /// <returns>Last character in string</returns>
+        public static char GetLastCharacter(string input)
+        {
+            return string.IsNullOrEmpty(input) ? '\0' : input[input.Length - 1];
+        }
+
     }
 
     //    public enum MouseAndKeyboard
