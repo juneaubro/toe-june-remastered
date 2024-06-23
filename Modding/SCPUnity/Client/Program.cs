@@ -7,18 +7,21 @@ class Program
     {
         Console.Title = "SCMP Client";
 
-        Process currentProcess = Process.GetCurrentProcess();
         const string filePath = "pid.txt";
 
         if (!File.Exists(filePath))
         {
-            File.Create(filePath);
+            Console.WriteLine("pid.txt does not exist, creating it");
+            File.Create(filePath).Close();
+            Console.WriteLine("pid.txt was created");
         }
 
         try
         {
+            Console.WriteLine($"Attempting to write to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
             using (StreamWriter writer = new StreamWriter(filePath))
             {
+                Process currentProcess = Process.GetCurrentProcess();
                 writer.WriteLine(currentProcess.Id);
                 writer.Close();
             }
@@ -27,6 +30,9 @@ class Program
         {
             Console.WriteLine($"Error writing to file: {e.Message}");
         }
+
+        Console.WriteLine($"Finished writing to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+
 
         // UDP server address
         string address = "127.0.0.1";
@@ -50,8 +56,6 @@ class Program
 
             while (!client.GameProcess.HasExited)
             {
-                
-
                 Thread.Sleep(500);
             }
 
