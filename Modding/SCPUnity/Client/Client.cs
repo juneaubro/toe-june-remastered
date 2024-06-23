@@ -8,20 +8,20 @@ internal class Client : UdpClient
 {
     public static Client Instance;
     public bool StartupError = false;
+    public Process GameProcess;
+    public IntPtr GameHandle = IntPtr.Zero;
 
     private string _address;
     private int _port;
     private bool _stop;
-    private Process _gameProcess;
-    private IntPtr _gameHandle = IntPtr.Zero;
 
     public Client(string aAddress, int aPort) : base(aAddress, aPort)
     {
         _address = aAddress;
         _port = aPort;
         Instance = this;
-        _gameProcess = new Process();
-        _gameProcess.StartInfo.UseShellExecute = false;
+        GameProcess = new Process();
+        GameProcess.StartInfo.UseShellExecute = false;
 
         string gamePath = $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe";
 
@@ -30,14 +30,14 @@ internal class Client : UdpClient
         if (File.Exists(gamePath))
         {
             Console.WriteLine("Found game exe, starting process");
-            _gameProcess.StartInfo.FileName = gamePath;
+            GameProcess.StartInfo.FileName = gamePath;
 
-            if (_gameProcess.Start())
+            if (GameProcess.Start())
             {
                 Console.WriteLine("Game process started, getting process handle");
-                _gameHandle = _gameProcess.Handle;
+                GameHandle = GameProcess.Handle;
 
-                if (_gameHandle == IntPtr.Zero)
+                if (GameHandle == IntPtr.Zero)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkRed;
                     Console.WriteLine("Game process handle is not valid. Exiting.");
@@ -59,6 +59,14 @@ internal class Client : UdpClient
         }
     }
 
+    ~Client()
+    {
+        if (!GameProcess.HasExited)
+        {
+            GameProcess.Close();
+        }
+    }
+
     public void DisconnectAndStop()
     {
         _stop = true;
@@ -72,7 +80,6 @@ internal class Client : UdpClient
     protected override void OnConnected()
     {
         Console.WriteLine($"Client connected");
-
         // Start receive datagrams
         ReceiveAsync();
     }
