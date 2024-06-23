@@ -10,7 +10,9 @@
     <RepositoryUrl>https://github.com/juneaubro/toe-june-remastered</RepositoryUrl>
     <PackageProjectUrl>https://github.com/juneaubro/toe-june-remastered/tree/main/Modding/SCPUnity/SCMP</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Configurations>Debug;Release;ServerDebug;ServerRelease</Configurations>
+    <Configurations>Debug;Release</Configurations>
+    <ErrorReport>send</ErrorReport>
+    <Title>SCMP</Title>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,13 +34,8 @@
   
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>E:\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
       <HintPath>Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="NetCoreServer">
-      <HintPath>References\NetCoreServer.dll</HintPath>
+      <HintPath>E:\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Unity.InputSystem">
       <HintPath>References\Unity.InputSystem.dll</HintPath>
@@ -62,6 +59,6 @@
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cd $(SolutionDir) &amp;&amp; if &quot;$(TargetPath)&quot;==&quot;C:\github\toe-june-remastered\Modding\SCPUnity\SCMP\bin\Debug\SCMP.dll&quot; ( copy /Y &quot;$(TargetPath)&quot; &quot;Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Joesmod\$(TargetFileName)&quot;) else ( copy /Y &quot;$(TargetPath)&quot; &quot;E:\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\SCMP\$(TargetFileName)&quot; &amp;&amp; &quot;E:\SCP Unity 0.7.9\SCP Unity 0.7.9\SCP Unity.exe&quot;)" />
+    <Exec Command="cd $(SolutionDir) &amp;&amp; if &quot;$(TargetPath)&quot;==&quot;C:\github\toe-june-remastered\Modding\SCPUnity\SCMP\bin\$(Configuration)\$(TargetFileName)&quot; ( copy /Y &quot;$(TargetPath)&quot; &quot;Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Joesmod\$(TargetFileName)&quot;) else ( copy /Y &quot;$(TargetPath)&quot; &quot;E:\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\SCMP\$(TargetFileName)&quot;)" />
   </Target>
 </Project>

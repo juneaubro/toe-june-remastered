@@ -78,3 +78,5 @@ Modding/LethalCompany/NightVision/NightVision/obj/Debug/
 /Modding/SCPUnity/SCMP/*.sln
 /Modding/SCPUnity/Server/bin/
 /Modding/SCPUnity/Server/obj/
+/Modding/SCPUnity/Client/obj/
+/Modding/SCPUnity/Client/bin/
