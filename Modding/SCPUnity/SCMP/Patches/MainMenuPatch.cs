@@ -5,7 +5,6 @@ using TMPro;
 using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
 using System.Collections.Generic;
-using MirzaBeig.ParticleSystems;
 
 namespace SCMP.Patches
 {

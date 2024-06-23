@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cd $(SolutionDir) &amp;&amp; if &quot;$(TargetPath)&quot;==&quot;Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Client\bin\$(Configuration)\net6.0\Client.dll&quot; ( copy /Y &quot;$(TargetDir)&quot; &quot;E:\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\SCMP\&quot;) else ( copy /Y &quot;$(TargetDir)&quot; &quot;Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Joesmod\$(TargetFileName)&quot;)" />
+    <Exec Command="cd $(SolutionDir) &amp;&amp; if &quot;$(TargetPath)&quot;==&quot;Z:\GitHub\toe-june-remastered\Modding\SCPUnity\Client\bin\$(Configuration)\net6.0\Client.dll&quot; ( copy /Y &quot;$(TargetDir)&quot; &quot;E:\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\SCMP\&quot;) else ( copy /Y &quot;$(TargetDir)&quot; &quot;Z:\games\SCP Unity 0.7.9\SCP Unity 0.7.9\BepInEx\plugins\Joesmod\&quot;)" />
   </Target>
 
 </Project>
