@@ -30,6 +30,7 @@ namespace SCMP.Patches
         public static TextMeshProUGUI MultiplayerButtonText;
         public static GameObject MultiplayerTitleObject;
         public static TextMeshProUGUI MultiplayerTitleText;
+        public static GameObject MultiplayerBackgroundImage;
         public static GameObject HostButtonObject;
         public static Button HostButton;
         public static TextMeshProUGUI HostButtonText;
@@ -71,7 +72,7 @@ namespace SCMP.Patches
             if (_instance == null)
                 _instance = __instance;
 
-            if (!_buttonCreated)
+            if (!_buttonCreated && MultiplayerButtonObject == null)
             {
                 _buttonCreated = true;
                 Initialize();
@@ -131,6 +132,8 @@ namespace SCMP.Patches
             _multiplayerMenuObject.SetActive(false);
 
             // BACKGROUND IMAGE
+            //MultiplayerBackgroundImage = Object.Instantiate(_backgroundImage);
+            //MultiplayerBackgroundImage.transform.SetParent(_multiplayerMenuObject.transform);
             _backgroundImage.transform.SetParent(_multiplayerMenuObject.transform);
 
             // MULTIPLAYER MENU : BACK BUTTON
@@ -282,6 +285,8 @@ namespace SCMP.Patches
             NavigationButtons.transform.GetChild(1).GetComponent<Button>().onClick = cancelEvent;
             NavigationButtons.SetActive(false);
             NavigationButtons.name = "NavigationButtons";
+            NavigationButtons.transform.GetChild(0).name = "JoinLobbyButton";
+            NavigationButtons.transform.GetChild(1).name = "CancelButton";
 
             // MULTIPLAYER MENU : HOST NEW GAME OPTIONS
             newGameCopy = _instance.transform.GetChild(0).GetChild(2).gameObject;
@@ -353,6 +358,7 @@ namespace SCMP.Patches
         // Hide Main Menu objects, show Multiplayer Menu objects
         public static void ShowMultiplayerMenu(bool state)
         {
+
             _multiplayerMenuObject.SetActive(state);
             _instance.mainMenuButtons.SetActive(!state);
             _instance.mainMenuLogo.SetActive(!state);

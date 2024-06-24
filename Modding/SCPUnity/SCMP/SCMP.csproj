@@ -13,6 +13,7 @@
     <Configurations>Debug;Release</Configurations>
     <ErrorReport>send</ErrorReport>
     <Title>SCMP</Title>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
 
   <ItemGroup>

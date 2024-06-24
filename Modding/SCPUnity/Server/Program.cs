@@ -11,7 +11,7 @@ class Program
         if (server.Start())
         {
 
-            for (; ; )
+            for (;;)
             {
                 string line = Console.ReadLine();
 

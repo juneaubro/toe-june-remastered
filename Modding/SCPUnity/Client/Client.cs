@@ -6,10 +6,11 @@ using UdpClient = NetCoreServer.UdpClient;
 
 internal class Client : UdpClient
 {
-    public static Client Instance;
+    public static Client Instance = null!;
     public bool StartupError = false;
     public Process GameProcess;
     public IntPtr GameHandle = IntPtr.Zero;
+    public bool GameRunningFirst = false;
 
     private string _address;
     private int _port;
@@ -23,39 +24,67 @@ internal class Client : UdpClient
         GameProcess = new Process();
         GameProcess.StartInfo.UseShellExecute = false;
 
-        string gamePath = $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe";
+        // Game might have started first, if so,
+        // current directory is already the game folder
+        string gamePath = "";
+        gamePath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe"
+            : $@"{Directory.GetCurrentDirectory()}\SCP Unity.exe";
 
-        Console.WriteLine(gamePath);
-
-        if (File.Exists(gamePath))
+        if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
         {
-            Console.WriteLine("Found game exe, starting process");
-            GameProcess.StartInfo.FileName = gamePath;
+            gamePath = $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe";
+        }
+        else
+        {
+            // game is already running
+            gamePath = $@"{Directory.GetCurrentDirectory()}\SCP Unity.exe";
+            GameRunningFirst = true;
+        }
 
-            if (GameProcess.Start())
+        if (!GameRunningFirst)
+        {
+            if (File.Exists(gamePath))
             {
-                Console.WriteLine("Game process started, getting process handle");
-                GameHandle = GameProcess.Handle;
+                Console.WriteLine("Found game exe, starting process");
+                GameProcess.StartInfo.FileName = gamePath;
 
-                if (GameHandle == IntPtr.Zero)
+                if (GameProcess.Start())
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.WriteLine("Game process handle is not valid. Exiting.");
-                    Console.ResetColor();
-                    StartupError = true;
+                    Console.WriteLine("Game process started, getting process handle");
+                    GameHandle = GameProcess.Handle;
+
+                    if (GameHandle == IntPtr.Zero)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("Game process handle is not valid. Exiting.");
+                        Console.ResetColor();
+                        StartupError = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Game process handle acquired");
+                    }
                 }
-                else
-                {
-                    Console.WriteLine("Game process handle acquired");
-                }
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Game exe was not found. Make sure all files are in the BepInEx plugins directory. Exiting.");
+                Console.ResetColor();
+                StartupError = true;
             }
         }
         else
         {
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine("Game exe was not found. Make sure all files are in the BepInEx plugins directory. Exiting.");
-            Console.ResetColor();
-            StartupError = true;
+            // search for existing game process
+            Process[] processes = Process.GetProcessesByName("SCP Unity");
+
+            foreach (Process process in processes)
+            {
+                Console.WriteLine("Found game process");
+                GameProcess = process;
+                GameHandle = process.Handle;
+            }
         }
     }
 

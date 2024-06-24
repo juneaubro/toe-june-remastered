@@ -22,6 +22,8 @@ namespace SCMP
         private static Process _clientConsoleProcess;
         private static IntPtr _clientConsoleHandle;
         private static string _filePath;
+        private static string _fileName;
+        static string PLUGIN_PATH = @$"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\";
 
         void Awake()
         {
@@ -47,46 +49,114 @@ namespace SCMP
             StartClientConsoleCheckThread();
         }
 
-        public static void SetClientConsolePID()
+        public void CheckForClientConsole(string pidPath)
         {
+            bool found = false;
+            Console.WriteLine("Checking for client console process");
+            Process[] processes = Process.GetProcessesByName("WindowsTerminal");
 
-            _filePath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\pid.txt";
+            foreach (Process process in processes)
+            {
+                if (process.StartInfo.FileName == @$"{PLUGIN_PATH}\Client.exe")
+                {
+                    Console.WriteLine("Client console process found");
+                    _clientConsoleProcess = process;
+                    _clientConsoleHandle = process.Handle;
+                    Console.WriteLine($"PID : {process.Id}");
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                try
+                {
+                    Console.WriteLine("Client console process not found, attempting to start Client.exe");
+                    _clientConsoleProcess = new Process();
+                    _clientConsoleProcess.StartInfo.UseShellExecute = true;
+                    _clientConsoleProcess.StartInfo.CreateNoWindow = true;
+                    _clientConsoleProcess.StartInfo.FileName = $@"{PLUGIN_PATH}\Client.exe";
+                    _clientConsoleProcess.StartInfo.Arguments = "-gameStarted";
+
+                    if (_clientConsoleProcess.Start())
+                    {
+                        _clientConsoleHandle = _clientConsoleProcess.Handle;
+                        Console.WriteLine("Client.exe was successfully started - attempting to set client console PID again");
+                        Helpers.WaitForFile(pidPath);
+                        //SetClientConsolePID();
+                    }
+                }
+                catch (Exception ee)
+                {
+                    Console.WriteLine("Couldn't start Client exe, exiting");
+                    Application.Quit();
+                }
+            }
+        }
+
+        public void SetClientConsolePID()
+        {
+            _filePath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? "pid.txt"
+                : $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\pid.txt";
+            _fileName = _filePath.Substring(_filePath.LastIndexOf('\\') + 1);
 
             if (File.Exists(_filePath))
             {
                 Helpers.WaitForFile(_filePath, FileAccess.ReadWrite);
 
-                // Try to read from pid.txt to get the processId of client console to check for
                 try
                 {
                     Console.WriteLine("Getting client console PID...");
                     string pidString = Helpers.ReadFileBytes(_filePath);
+
                     if (int.TryParse(pidString, out int processId))
                     {
-                        Console.WriteLine($"PID {processId} retrieved - obtaining client console handle");
+                        Console.WriteLine($"PID {processId} retrieved");
                         _clientConsoleProcess = Process.GetProcessById(processId);
                         _clientConsoleHandle = _clientConsoleProcess.Handle;
                         Console.WriteLine("Successfully acquired client console handle");
                     }
                     else
                     {
-                        Console.WriteLine("Error while parsing pid from pid.txt");
+                        Console.WriteLine($"Error while parsing PID from {_fileName}");
                     }
 
                 }
+                catch (ArgumentException ae)
+                {
+                    Console.WriteLine(
+                        "Could not acquire client console handle");
+
+                    CheckForClientConsole(_filePath);
+                }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error reading pid.txt : {e.Message}");
-                    Console.WriteLine(_filePath);
+                    Console.WriteLine($"Error reading {_fileName} : {e.Message}");
                 }
             }
             else
             {
-                Console.WriteLine("pid.txt not found");
+                Console.WriteLine($"{_fileName} not found");
+                CheckForClientConsole(_filePath);
+
+                string pidString = Helpers.ReadFileBytes(_filePath);
+                if (int.TryParse(pidString, out int processId))
+                {
+                    Console.WriteLine($"PID {processId} retrieved");
+                    _clientConsoleProcess = Process.GetProcessById(processId);
+                    _clientConsoleHandle = _clientConsoleProcess.Handle;
+                    Console.WriteLine("Successfully acquired client console handle");
+                }
+                else
+                {
+                    Console.WriteLine($"Error while parsing PID from {_fileName}");
+                }
+                //File.Create(_filePath);
             }
         }
 
-        private static void StartClientConsoleCheckThread()
+        private void StartClientConsoleCheckThread()
         {
             Console.WriteLine("Starting thread to check for client console");
 

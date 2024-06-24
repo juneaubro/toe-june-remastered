@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -21,7 +22,6 @@ namespace SCMP
         [MethodImpl(MethodImplOptions.NoInlining)] // Force no inlining for stack walking in Print()
         public static void PrintGameObjectInfo(GameObject gameObject, bool printToLog = true)
         {
-            string additionalTab = "";
             string tabs = "";
 
             if (_level == 0)
@@ -185,6 +185,7 @@ namespace SCMP
             }
             catch (IOException ex)
             {
+                Console.WriteLine($"{ex.Message}");
             }
 
             if (buffer != null) return System.Text.Encoding.Default.GetString(buffer);
@@ -231,8 +232,44 @@ namespace SCMP
             }
         }
 
+        public static void WriteToFile(string filePath, string value)
+        {
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine($"{filePath} does not exist, creating it");
+                File.Create(filePath).Close();
+                Console.WriteLine($"{filePath} was created");
+            }
+
+            try
+            {
+                Console.WriteLine($"Attempting to write to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+                using (StreamWriter writer = new StreamWriter(filePath))
+                {
+                    writer.WriteLine(value);
+                    writer.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error writing to file: {e.Message}");
+            }
+
+            Console.WriteLine($"Finished writing to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+        }
     }
 
+    //public class Log : TextWriter
+    //{
+    //    public override Encoding Encoding { get{ return Encoding.ASCII; } }
+
+    //    public override void WriteLine(string value)
+    //    {
+    //        Console.ForegroundColor = ConsoleColor.DarkRed;
+    //        base.WriteLine(value);
+    //        Console.ResetColor();
+    //    }
+    //}
     //    public enum MouseAndKeyboard
     //    {
     //        MouseLeft = -1,
