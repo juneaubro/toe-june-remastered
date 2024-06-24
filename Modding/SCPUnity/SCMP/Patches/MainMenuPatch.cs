@@ -72,11 +72,18 @@ namespace SCMP.Patches
             if (_instance == null)
                 _instance = __instance;
 
-            if (!_buttonCreated && MultiplayerButtonObject == null)
+            if (!_buttonCreated)
             {
                 _buttonCreated = true;
                 Initialize();
             }
+        }
+
+        [HarmonyPatch("OnGameLoadBegin")]
+        [HarmonyPostfix]
+        static void OnGameLoadBegin()
+        {
+            _buttonCreated = false;
         }
 
         private static void Initialize()
