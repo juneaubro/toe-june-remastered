@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Net;
+using System.Runtime.CompilerServices;
 
 class Program
 {
@@ -32,20 +34,32 @@ class Program
             return;
         }
 
-        Console.WriteLine("Client connecting...");
+        Console.WriteLine("Connecting...");
         if (client.Connect())
         {
-            //string line = "";
+            string line = "";
 
             while (!client.GameProcess.HasExited)
             {
+                //line = Console.ReadLine();
+                //
+                //if (string.IsNullOrEmpty(line))
+                //    continue;
+                //
+                //if (line == "/quit")
+                //{
+                //    Console.WriteLine("Stopping client");
+                //    break;
+                //}
+                //
+                //client.Send(client.Endpoint, line);
                 Thread.Sleep(500);
             }
 
-            Console.WriteLine("Client disconnecting...");
+            Console.WriteLine("Disconnecting...");
             client.DisconnectAndStop();
             Console.WriteLine("Exiting...");
-            Thread.Sleep(1000);
+            Thread.Sleep(500);
         }
     }
 
@@ -101,6 +115,6 @@ class Program
 
     public static void WaitForLobby()
     {
-        
+
     }
 }

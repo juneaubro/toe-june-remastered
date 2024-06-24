@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>SCMP</AssemblyName>
     <Description>An attempt at multiplayer for SCP Unity</Description>
-    <Version>0.0.1</Version>
+    <Version>0.0.3.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RepositoryUrl>https://github.com/juneaubro/toe-june-remastered</RepositoryUrl>

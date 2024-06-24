@@ -6,6 +6,16 @@ using UdpClient = NetCoreServer.UdpClient;
 
 internal class Client : UdpClient
 {
+    public enum EventType
+    {
+        Join = 0,
+        Leave = 1,
+        UpdateRotation = 2,
+        UpdateLocation = 3,
+        StartGame = 4,
+        EndGame = 5
+    }
+
     public static Client Instance = null!;
     public bool StartupError = false;
     public Process GameProcess;
@@ -15,6 +25,7 @@ internal class Client : UdpClient
     private string _address;
     private int _port;
     private bool _stop;
+    private int _retryAttempts = 0;
 
     public Client(string aAddress, int aPort) : base(aAddress, aPort)
     {
@@ -93,6 +104,7 @@ internal class Client : UdpClient
         if (!GameProcess.HasExited)
         {
             GameProcess.Close();
+            DisconnectAndStop();
         }
     }
 
@@ -108,21 +120,24 @@ internal class Client : UdpClient
 
     protected override void OnConnected()
     {
-        Console.WriteLine($"Client connected");
+        if (Send($"{(int)EventType.Join}Client1\0") > 0)
+        {
+            Console.WriteLine($"Connected");
+        }
+
         // Start receive datagrams
         ReceiveAsync();
     }
 
     protected override void OnDisconnected()
     {
-        Console.WriteLine($"Client disconnected");
-
-        // Wait for a while...
-        Thread.Sleep(1000);
-
         // Try to connect again
         if (!_stop)
+        {
+            Console.WriteLine($"Disconnected");
+            Thread.Sleep(3000);
             Connect();
+        }
     }
 
     protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
@@ -137,4 +152,9 @@ internal class Client : UdpClient
     {
         Console.WriteLine($"Echo UDP client caught an error with code {error}");
     }
+
+    //protected override void OnSent(EndPoint endpoint, long sent)
+    //{
+    //    ReceiveAsync();
+    //}
 }
