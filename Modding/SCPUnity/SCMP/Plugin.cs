@@ -97,9 +97,18 @@ namespace SCMP
 
         public void SetClientConsolePID()
         {
-            _filePath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? "pid.txt"
-                : $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\pid.txt";
+            string binDirectory = $@"{Directory.GetCurrentDirectory()}\bin\";
+
+            if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name != "SCMP")
+            {
+                binDirectory = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\";
+            }
+
+            _filePath = $@"{binDirectory}pid.txt";
             _fileName = _filePath.Substring(_filePath.LastIndexOf('\\') + 1);
+
+            if (!Directory.Exists(binDirectory))
+                Directory.CreateDirectory(binDirectory);
 
             if (File.Exists(_filePath))
             {

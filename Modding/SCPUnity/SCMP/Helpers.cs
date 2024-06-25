@@ -241,9 +241,11 @@ namespace SCMP
                 Console.WriteLine($"{filePath} was created");
             }
 
+            string fileName = filePath.Substring(filePath.LastIndexOf('\\') + 1);
+
             try
             {
-                Console.WriteLine($"Attempting to write to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+                Console.WriteLine($"Attempting to write to {fileName}");
                 using (StreamWriter writer = new StreamWriter(filePath))
                 {
                     writer.WriteLine(value);
@@ -256,7 +258,7 @@ namespace SCMP
                 return false;
             }
 
-            Console.WriteLine($"Finished writing to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+            Console.WriteLine($"Finished writing to {fileName}");
             return true;
         }
 
@@ -269,9 +271,11 @@ namespace SCMP
                 Console.WriteLine($"{filePath} was created");
             }
 
+            string fileName = filePath.Substring(filePath.LastIndexOf('\\') + 1);
+
             try
             {
-                Console.WriteLine($"Attempting to write to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+                Console.WriteLine($"Attempting to write to {fileName}");
                 using (StreamWriter writer = new StreamWriter(filePath, true))
                 {
                     foreach (string value in values)
@@ -288,7 +292,7 @@ namespace SCMP
                 return false;
             }
 
-            Console.WriteLine($"Finished writing to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+            Console.WriteLine($"Finished writing to {fileName}");
             return true;
         }
     }

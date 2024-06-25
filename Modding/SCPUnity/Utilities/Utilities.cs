@@ -116,7 +116,7 @@
     /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
     /// <param name="milliseconds">Time in milliseconds for <see cref="Thread"/> to sleep before checking <see cref="File"/> again</param>
     /// <param name="optionalBool">Optional <see langword="bool"/> to check each iteration</param>
-    public static void WaitForFile(string filePath, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000, bool optionalBool = false)
+    public static void WaitForFile(string filePath, ref bool optionalBool, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
     {
         while (!IsFileReady(filePath, fileAccess, fileShare) && !optionalBool)
         {

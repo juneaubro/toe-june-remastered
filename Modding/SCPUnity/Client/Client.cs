@@ -102,6 +102,15 @@ internal class Client : UdpClient
 
     protected override void OnConnected()
     {
+        string connectMessage = $"{(int)EventType.Join}{_username}\0";
+        char[] badChars = {'\r', '\n' };
+
+        foreach (char c in badChars)
+        {
+            while (connectMessage.Contains(c))
+                connectMessage = connectMessage.Remove(connectMessage.IndexOf(c));
+        }
+
         if (Send($"{(int)EventType.Join}{_username}\0") > 0)
         {
             Console.WriteLine($"Connected");

@@ -47,19 +47,16 @@ class Server : UdpServer
         switch (type)
         {
             case EventType.Join:
+
                 Client client = new Client();
                 char[] chars = message.ToCharArray();
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("[");
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.Write($"{type}Event");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("] ");
-                Console.ResetColor();
 
                 for (uint i = 1; i < size; i++)
                 {
+                    if (chars[i] == '\n' || chars[i] == '\r')
+                        continue;
+
                     if (chars[i] == '\0')
                         break;
 
@@ -76,6 +73,7 @@ class Server : UdpServer
                 client.id = id;
                 client.endpoint = endpoint;
                 ClientList.Add(client);
+                EventColors.FormatEventTypeOutput(type);
                 Console.WriteLine($"{client.username} joined with id {client.id}");
                 break;
             case EventType.Leave:
@@ -93,61 +91,18 @@ class Server : UdpServer
 
         if (endpoint != Endpoint)
         {
-            Console.WriteLine($"Incoming: {Encoding.UTF8.GetString(buffer, (int)offset, (int)size)}");
+            //Console.WriteLine($"Incoming: {Encoding.UTF8.GetString(buffer, (int)offset, (int)size)}");
 
             foreach (Client client in ClientList)
             {
                 if (endpoint != client.endpoint)
                 {
-                   // SendAsync(client.endpoint, buffer, offset, size);
-                    Console.WriteLine(SendAsync(client.endpoint, buffer, offset, size));
+                    SendAsync(client.endpoint, buffer, offset, size);
+                    //Console.WriteLine(SendAsync(client.endpoint, buffer, offset, size));
                 }
             }
         }
 
-
-
-        ////base.OnReceived(endpoint, buffer, offset, size);
-        //SocketAddress socketAddress = endpoint.Serialize();
-        //EventType eventType = (EventType)BitConverter.ToInt32(buffer, 0);
-
-        //Console.WriteLine(eventType.ToString());
-        //switch (eventType)
-        //{
-        //    case EventType.Join:
-        //        Client client = new Client();
-
-        //        for (uint i = 1; i < size; i++)
-        //        {
-        //            if (buffer[i] != '\0')
-        //            {
-        //                client.username += buffer[i];
-        //            }
-        //        }
-
-        //        int id = GenerateId();
-        //        while (idList.Contains(id))
-        //        {
-        //            id = GenerateId();
-        //        }
-
-        //        client.id = id;
-        //        client.endpoint = endpoint;
-        //        ClientList.Add(client);
-        //        Console.Write($" {client.username} joined with id {client.id}");
-        //        break;
-        //    case EventType.Leave:
-        //        break;
-        //    case EventType.UpdateRotation:
-        //        break;
-        //    case EventType.UpdateLocation:
-        //        break;
-        //    case EventType.StartGame:
-        //        break;
-        //    case EventType.EndGame:
-        //        break;
-        //    default: break;
-        //}
         ReceiveAsync();
     }
 

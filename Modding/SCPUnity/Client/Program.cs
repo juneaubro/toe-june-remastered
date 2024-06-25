@@ -7,6 +7,7 @@ class Program
     private static string _address;
     private static int _port;
     private static string _username;
+    private static string _binDirectory;
     private static bool _gameStartedFirst = false;
     private static bool _gameRunning = false;
     private static bool _quitBeforeServerInfo = false;
@@ -23,8 +24,16 @@ class Program
             foreach (string arg in args)
             {
                 if (arg == "-gameStarted")
+                {
+                    _binDirectory = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin";
                     _gameStartedFirst = true;
+                }
             }
+        }
+
+        if (string.IsNullOrEmpty(_binDirectory))
+        {
+            _binDirectory = $@"{Directory.GetCurrentDirectory()}\bin";
         }
 
         WritePID();
@@ -44,6 +53,7 @@ class Program
                 _gameProcess = process;
                 _gameHandle = process.Handle;
             }
+
         }
 
         _gameRunning = true;
@@ -130,13 +140,10 @@ class Program
 
     public static bool WaitForLobby()
     {
-        string path = "server.txt";
+        string path = $@"{_binDirectory}\server.txt";
 
-        // if game opened first, directory is different
-        if (_gameStartedFirst)
-        {
-            path = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\server.txt";
-        }
+        if (!Directory.Exists(_binDirectory))
+            Directory.CreateDirectory(_binDirectory);
 
         if (File.Exists(path))
             File.Delete(path);
@@ -144,7 +151,7 @@ class Program
         File.Create(path).Close();
         
         Console.WriteLine($"Waiting for server info...");
-        Utilities.WaitForFile(path);
+        Utilities.WaitForFile(path, ref _quitBeforeServerInfo);
 
         if (!_quitBeforeServerInfo)
         {
@@ -165,13 +172,16 @@ class Program
 
     public static void WritePID()
     {
-        string path = "pid.txt";
+        string path = $@"{_binDirectory}\pid.txt";
 
         // if game opened first, directory is different
         if (_gameStartedFirst)
         {
-            path = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\pid.txt";
+            path = $@"{_binDirectory}\pid.txt";
         }
+
+        if (!Directory.Exists(_binDirectory))
+            Directory.CreateDirectory(_binDirectory);
 
         if (File.Exists(path))
         {

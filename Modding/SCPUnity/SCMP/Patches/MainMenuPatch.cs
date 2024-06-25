@@ -29,7 +29,7 @@ namespace SCMP.Patches
         private static bool _validatingPort = false;
         private static bool _validatingName = false;
         private static string _serverFileName = null;
-        private static string _serverFilePath = null;
+        private static string _serverTxtPath = null;
 
 
         public static MainMenu _instance = null;
@@ -125,11 +125,11 @@ namespace SCMP.Patches
             _serverFileName = "server.txt";
             if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
             {
-                _serverFilePath = $@"{Directory.GetCurrentDirectory()}\{_serverFileName}";
+                _serverTxtPath = $@"{Directory.GetCurrentDirectory()}\bin\{_serverFileName}";
             }
             else
             {
-                _serverFilePath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\{_serverFileName}";
+                _serverTxtPath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\{_serverFileName}";
             }
         }
 
@@ -621,7 +621,6 @@ namespace SCMP.Patches
             PortTextObject.SetActive(state);
         }
 
-
         private static void ShowNameField(bool state)
         {
             NameInputFieldObject.SetActive(state);
@@ -669,7 +668,21 @@ namespace SCMP.Patches
 
         private static void JoinHost()
         {
-            Helpers.WriteToFile(_serverFilePath, [IpInputField.text, PortInputField.text, NameInputField.text]);
+            // If IP, port, or name are empty, give it the default value (respective placeholder text)
+            if (string.IsNullOrEmpty(IpInputField.text))
+            {
+                IpInputField.text = IpPlaceholderText.text.Substring(IpPlaceholderText.text.IndexOf(' ') + 1);
+            }
+            if (string.IsNullOrEmpty(PortInputField.text))
+            {
+                PortInputField.text = PortPlaceholderText.text.Substring(PortPlaceholderText.text.IndexOf(' ') + 1);
+            }
+            if (string.IsNullOrEmpty(NameInputField.text))
+            {
+                NameInputField.text = NamePlaceholderText.text.Substring(NamePlaceholderText.text.IndexOf(' ') + 1);
+            }
+
+            Helpers.WriteToFile(_serverTxtPath, [IpInputField.text, PortInputField.text, NameInputField.text]);
             Debug.Log($"Joining server...");
         }
 
