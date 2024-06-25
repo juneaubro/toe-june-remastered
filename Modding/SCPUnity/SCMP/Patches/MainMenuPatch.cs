@@ -1,5 +1,4 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -670,7 +669,7 @@ namespace SCMP.Patches
 
         private static void JoinHost()
         {
-            Helpers.WriteToFile(_serverFilePath, [IpInputField.text, PortInputField.text]);
+            Helpers.WriteToFile(_serverFilePath, [IpInputField.text, PortInputField.text, NameInputField.text]);
             Debug.Log($"Joining server...");
         }
 

@@ -52,6 +52,9 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>References\UnityEngine.UIModule.dll</HintPath>
     </Reference>
+    <Reference Include="Utilities">
+      <HintPath>References\Utilities.dll</HintPath>
+    </Reference>
   </ItemGroup>
   
   <ItemGroup>

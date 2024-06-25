@@ -9,8 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Events">
+      <HintPath>..\SCMP\References\Events.dll</HintPath>
+    </Reference>
     <Reference Include="NetCoreServer">
       <HintPath>..\SCMP\References\NetCoreServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Utilities">
+      <HintPath>..\SCMP\References\Utilities.dll</HintPath>
     </Reference>
   </ItemGroup>
 

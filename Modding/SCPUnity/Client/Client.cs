@@ -6,16 +6,6 @@ using UdpClient = NetCoreServer.UdpClient;
 
 internal class Client : UdpClient
 {
-    public enum EventType
-    {
-        Join = 0,
-        Leave = 1,
-        UpdateRotation = 2,
-        UpdateLocation = 3,
-        StartGame = 4,
-        EndGame = 5
-    }
-
     public static Client Instance = null!;
     public bool StartupError = false;
     public Process GameProcess;
@@ -24,13 +14,15 @@ internal class Client : UdpClient
 
     private string _address;
     private int _port;
+    private string _username;
     private bool _stop;
     private int _retryAttempts = 0;
 
-    public Client(string aAddress, int aPort, bool gameRunning = false) : base(aAddress, aPort)
+    public Client(string aAddress, int aPort, string aUsername, bool gameRunning = false) : base(aAddress, aPort)
     {
         _address = aAddress;
         _port = aPort;
+        _username = aUsername;
         Instance = this;
         GameRunningFirst = gameRunning;
 
@@ -110,7 +102,7 @@ internal class Client : UdpClient
 
     protected override void OnConnected()
     {
-        if (Send($"{(int)EventType.Join}Client1\0") > 0)
+        if (Send($"{(int)EventType.Join}{_username}\0") > 0)
         {
             Console.WriteLine($"Connected");
         }
@@ -140,7 +132,7 @@ internal class Client : UdpClient
 
     protected override void OnError(SocketError error)
     {
-        Console.WriteLine($"Echo UDP client caught an error with code {error}");
+        Console.WriteLine($"Client caught an error with code {error}");
     }
 
     //protected override void OnSent(EndPoint endpoint, long sent)

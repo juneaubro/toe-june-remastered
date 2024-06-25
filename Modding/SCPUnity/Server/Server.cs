@@ -5,16 +5,6 @@ using NetCoreServer;
 
 class Server : UdpServer
 {
-    public enum EventType
-    {
-        Join = 0,
-        Leave = 1,
-        UpdateRotation = 2,
-        UpdateLocation = 3,
-        StartGame = 4,
-        EndGame = 5
-    }
-
     public struct Client
     {
         public string username;
