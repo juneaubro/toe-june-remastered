@@ -27,13 +27,12 @@ internal class Client : UdpClient
     private bool _stop;
     private int _retryAttempts = 0;
 
-    public Client(string aAddress, int aPort) : base(aAddress, aPort)
+    public Client(string aAddress, int aPort, bool gameRunning = false) : base(aAddress, aPort)
     {
         _address = aAddress;
         _port = aPort;
         Instance = this;
-        GameProcess = new Process();
-        GameProcess.StartInfo.UseShellExecute = false;
+        GameRunningFirst = gameRunning;
 
         // Game might have started first, if so,
         // current directory is already the game folder
@@ -41,22 +40,13 @@ internal class Client : UdpClient
         gamePath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe"
             : $@"{Directory.GetCurrentDirectory()}\SCP Unity.exe";
 
-        if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
-        {
-            gamePath = $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe";
-        }
-        else
-        {
-            // game is already running
-            gamePath = $@"{Directory.GetCurrentDirectory()}\SCP Unity.exe";
-            GameRunningFirst = true;
-        }
-
         if (!GameRunningFirst)
         {
             if (File.Exists(gamePath))
             {
                 Console.WriteLine("Found game exe, starting process");
+                GameProcess = new Process();
+                GameProcess.StartInfo.UseShellExecute = false;
                 GameProcess.StartInfo.FileName = gamePath;
 
                 if (GameProcess.Start())

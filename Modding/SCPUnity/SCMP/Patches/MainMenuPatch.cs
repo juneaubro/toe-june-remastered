@@ -1,10 +1,12 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
 using System.Collections.Generic;
+using System.IO;
 
 namespace SCMP.Patches
 {
@@ -19,11 +21,18 @@ namespace SCMP.Patches
         private static GameObject _patreonButton = null;
         private static GameObject _menuButton = null;
         private static GameObject _inputField = null;
+        private static GameObject _newGameCopy;
+        private static Button.ButtonClickedEvent _cancelButtonClickedEvent;
+        private static Button.ButtonClickedEvent _startLobbyButtonClickedEvent;
+        private static Button.ButtonClickedEvent _joinGameButtonClickedEvent;
         private static bool _buttonCreated = false;
         private static bool _validatingIp = false;
         private static bool _validatingPort = false;
         private static bool _validatingName = false;
-        
+        private static string _serverFileName = null;
+        private static string _serverFilePath = null;
+
+
         public static MainMenu _instance = null;
         public static GameObject MultiplayerButtonObject;
         public static Button MultiplayerButton;
@@ -55,10 +64,13 @@ namespace SCMP.Patches
         public static GameObject NameTextObject;
         public static TextMeshProUGUI NameText;
         public static TextMeshProUGUI NamePlaceholderText;
-        public static GameObject NavigationButtons;
-        public static GameObject newGameCopy;
+        public static GameObject JoinScreenNavigationButtonsObject;
+        public static GameObject JoinScreenJoinButtonObject;
+        public static GameObject JoinScreenCancelButtonObject;
         public static GameObject HostGameScreen;
         public static GameObject HostGameScreenNavigationButtons;
+        public static GameObject HostGameScreenStartButtonObject;
+        public static GameObject HostGameScreenCancelButtonObject;
         public static GameObject LobbyScreen;
         public static List<GameObject> LobbyPlayers;
         public static GameObject HostGameScreenPlayerName;
@@ -77,6 +89,7 @@ namespace SCMP.Patches
                 _buttonCreated = true;
                 Initialize();
             }
+
         }
 
         [HarmonyPatch("OnGameLoadBegin")]
@@ -89,6 +102,7 @@ namespace SCMP.Patches
         private static void Initialize()
         {
             _buttonStack = _instance.mainMenuButtons.transform.GetChild(0).gameObject;
+            _newGameCopy = _instance.transform.GetChild(0).GetChild(2).gameObject;
             _backgroundImage = _instance.transform.GetChild(0).GetChild(2).GetChild(0).gameObject;
             _version = _instance.transform.GetChild(0).GetChild(1).GetChild(1).gameObject;
             _officeMarketingMessage = _instance.transform.GetChild(0).GetChild(1).GetChild(2).gameObject;
@@ -98,9 +112,26 @@ namespace SCMP.Patches
             _inputField = _instance.transform.GetChild(0).GetChild(2).GetChild(2).GetChild(3).GetChild(0).GetChild(0)
                 .gameObject;
 
+            _cancelButtonClickedEvent = new Button.ButtonClickedEvent();
+            _cancelButtonClickedEvent.AddListener(OnCancelClicked);
+            _startLobbyButtonClickedEvent = new Button.ButtonClickedEvent();
+            _startLobbyButtonClickedEvent.AddListener(StartLobby);
+            _joinGameButtonClickedEvent = new Button.ButtonClickedEvent();
+            _joinGameButtonClickedEvent.AddListener(JoinHost);
+
             SetVersionText();
             CreateMultiplayerButton();
             CreateMultiplayerMenu();
+
+            _serverFileName = "server.txt";
+            if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
+            {
+                _serverFilePath = $@"{Directory.GetCurrentDirectory()}\{_serverFileName}";
+            }
+            else
+            {
+                _serverFilePath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\{_serverFileName}";
+            }
         }
 
         // Multiplayer button on Main Menu
@@ -139,8 +170,6 @@ namespace SCMP.Patches
             _multiplayerMenuObject.SetActive(false);
 
             // BACKGROUND IMAGE
-            //MultiplayerBackgroundImage = Object.Instantiate(_backgroundImage);
-            //MultiplayerBackgroundImage.transform.SetParent(_multiplayerMenuObject.transform);
             _backgroundImage.transform.SetParent(_multiplayerMenuObject.transform);
 
             // MULTIPLAYER MENU : BACK BUTTON
@@ -282,71 +311,80 @@ namespace SCMP.Patches
 
             // MULTIPLAYER MENU : NAVIGATION BUTTONS
             GameObject navCopy = _instance.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
-            NavigationButtons = Object.Instantiate(navCopy);
-            NavigationButtons.transform.SetParent(_multiplayerMenuObject.transform);
-            NavigationButtons.transform.localPosition =
+            JoinScreenNavigationButtonsObject = Object.Instantiate(navCopy);
+            JoinScreenNavigationButtonsObject.SetActive(false);
+            JoinScreenNavigationButtonsObject.transform.SetParent(_multiplayerMenuObject.transform);
+            JoinScreenNavigationButtonsObject.transform.localPosition =
                 new Vector3(navCopy.transform.localPosition.x, navCopy.transform.localPosition.y - (Screen.height * 0.09f), 
                     navCopy.transform.localPosition.z);
-            Button.ButtonClickedEvent cancelEvent = new Button.ButtonClickedEvent();
-            cancelEvent.AddListener(OnCancelClicked);
-            NavigationButtons.transform.GetChild(1).GetComponent<Button>().onClick = cancelEvent;
-            NavigationButtons.SetActive(false);
-            NavigationButtons.name = "NavigationButtons";
-            NavigationButtons.transform.GetChild(0).name = "JoinLobbyButton";
-            NavigationButtons.transform.GetChild(1).name = "CancelButton";
+            JoinScreenNavigationButtonsObject.name = "NavigationButtons";
 
-            // MULTIPLAYER MENU : HOST NEW GAME OPTIONS
-            newGameCopy = _instance.transform.GetChild(0).GetChild(2).gameObject;
-            HostGameScreen=Object.Instantiate(newGameCopy);
-            HostGameScreen.SetActive(true);
+            // MULTIPLAYER MENU : JOIN SCREEN : JOIN LOBBY BUTTON
+            JoinScreenJoinButtonObject = JoinScreenNavigationButtonsObject.transform.GetChild(0).gameObject;
+            JoinScreenJoinButtonObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Join Game";
+            JoinScreenJoinButtonObject.GetComponent<Button>().onClick.RemoveAllListeners();
+            JoinScreenJoinButtonObject.GetComponent<Button>().onClick = _joinGameButtonClickedEvent;
+            JoinScreenJoinButtonObject.name = "JoinLobbyButton";
+
+            // MULTIPLAYER MENU : JOIN SCREEN : CANCEL BUTTON
+            JoinScreenCancelButtonObject = JoinScreenNavigationButtonsObject.transform.GetChild(1).gameObject;
+            JoinScreenCancelButtonObject.name = "CancelButton";
+            JoinScreenCancelButtonObject.GetComponent<Button>().onClick = _cancelButtonClickedEvent;
+
+            // MULTIPLAYER MENU : HOST GAME SCREEN
+            HostGameScreen = Object.Instantiate(_newGameCopy);
+            HostGameScreen.SetActive(false);
             HostGameScreen.transform.SetParent(_multiplayerMenuObject.transform);
-            HostGameScreen.transform.localPosition = newGameCopy.transform.localPosition;
+            HostGameScreen.transform.localPosition = _newGameCopy.transform.localPosition;
             HostGameScreen.name = "HostGameScreen";
+
+            // MULTIPLAYER MENU : HOST GAME SCREEN : NAVIGATION BUTTONS
             HostGameScreenNavigationButtons = HostGameScreen.transform.GetChild(2).gameObject;
-            HostGameScreenNavigationButtons.transform.position = NavigationButtons.transform.position;
+            HostGameScreenNavigationButtons.name = "HostGameScreenNavigationButtons";
+            HostGameScreenNavigationButtons.transform.position = JoinScreenNavigationButtonsObject.transform.position;
             HostGameScreenNavigationButtons.transform.GetChild(0).gameObject.transform.localPosition
-                = NavigationButtons.transform.GetChild(0).gameObject.transform.localPosition;
+                = JoinScreenNavigationButtonsObject.transform.GetChild(0).gameObject.transform.localPosition;
             HostGameScreenNavigationButtons.transform.GetChild(1).gameObject.transform.localPosition
-                = NavigationButtons.transform.GetChild(1).gameObject.transform.localPosition;
-            HostGameScreenNavigationButtons.transform.GetChild(0).GetChild(0).
-                gameObject.GetComponent<TextMeshProUGUI>().text = "Start Lobby";
-            HostGameScreenNavigationButtons.transform.GetChild(0).GetChild(0).
-                gameObject.name = "StartLobbyText";
-            HostGameScreenNavigationButtons.transform.GetChild(0).
-                gameObject.name = "StartLobbyButton";
+                = JoinScreenNavigationButtonsObject.transform.GetChild(1).gameObject.transform.localPosition;
+
+            // MULTIPLAYER MENU : HOST GAME SCREEN : START LOBBY BUTTON
+            HostGameScreenStartButtonObject = HostGameScreenNavigationButtons.transform.GetChild(0).gameObject;
+            HostGameScreenStartButtonObject.name = "StartLobbyButton";
+            HostGameScreenStartButtonObject.GetComponent<Button>().onClick.RemoveAllListeners();
+            HostGameScreenStartButtonObject.GetComponent<Button>().onClick = _startLobbyButtonClickedEvent;
+            HostGameScreenStartButtonObject.transform.GetChild(0)
+                .GetComponent<TextMeshProUGUI>().text = "Start Lobby";
+            HostGameScreenStartButtonObject.transform.GetChild(0).name = "StartLobbyText";
+
+            // MULTIPLAYER MENU : HOST GAME SCREEN : CANCEL BUTTON
             HostGameScreen.transform.GetChild(0).gameObject.SetActive(false);
-            HostGameScreenNavigationButtons.transform.GetChild(1).
-                gameObject.GetComponent<Button>().onClick.RemoveAllListeners();
-            HostGameScreenNavigationButtons.transform.GetChild(1).
-                gameObject.GetComponent<Button>().onClick = cancelEvent;
-            HostGameScreenNavigationButtons.transform.GetChild(0).
-                gameObject.GetComponent<Button>().onClick.RemoveAllListeners();
-            Button.ButtonClickedEvent startLobby = new Button.ButtonClickedEvent();
-            startLobby.AddListener(StartServer);
-            HostGameScreenNavigationButtons.transform.GetChild(0).
-                gameObject.GetComponent<Button>().onClick = startLobby;
-            HostGameScreenPlayerName = HostGameScreen.transform.GetChild(1).GetChild(3)
-                .GetChild(0).gameObject;
+            HostGameScreenCancelButtonObject = HostGameScreenNavigationButtons.transform.GetChild(1).gameObject;
+            HostGameScreenCancelButtonObject.GetComponent<Button>().onClick.RemoveAllListeners();
+            HostGameScreenCancelButtonObject.GetComponent<Button>().onClick = _cancelButtonClickedEvent;
+
+            // MULTIPLAYER MENU : HOST GAME SCREEN : SEED
             HostGameScreenSeed = HostGameScreen.transform.GetChild(1).GetChild(3)
                 .GetChild(1).gameObject;
-            string DBoyRandomNumber = $"D-{UnityEngine.Random.RandomRangeInt(1, 9999)}";
-            HostGameScreenPlayerName.transform.GetChild(0).GetChild(0).GetChild(1).gameObject
-                .GetComponent<TextMeshProUGUI>().text = DBoyRandomNumber;
-            HostGameScreenPlayerName.transform.GetChild(0).gameObject
-                .GetComponent<TMP_InputField>().text = DBoyRandomNumber;
 
-            // MULTIPLAYER MENU : LOBBY
+            // MULTIPLAYER MENU : HOST GAME SCREEN : PLAYER NAME
+            string dBoyRandomNumber = $"D-{UnityEngine.Random.RandomRangeInt(1, 9999)}";
+            HostGameScreenPlayerName = HostGameScreen.transform.GetChild(1).GetChild(3)
+                .GetChild(0).gameObject;
+            HostGameScreenPlayerName.transform.GetChild(0).GetChild(0).GetChild(1).gameObject
+                .GetComponent<TextMeshProUGUI>().text = dBoyRandomNumber;
+            HostGameScreenPlayerName.transform.GetChild(0).gameObject
+                .GetComponent<TMP_InputField>().text = dBoyRandomNumber;
+
+            // MULTIPLAYER MENU : LOBBY SCREEN
             LobbyScreen = new GameObject();
             LobbyScreen.name = "LobbyScreen";
             LobbyScreen.transform.SetParent(_multiplayerMenuObject.transform);
+
+            // MULTIPLAYER MENU : LOBBY SCREEN : NAVIGATION BUTTONS
             GameObject hostNavCopy = _instance.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
-            LobbyScreenNavigationButtons = Object.Instantiate(hostNavCopy);
+            LobbyScreenNavigationButtons = Object.Instantiate(JoinScreenNavigationButtonsObject);
+            LobbyScreenNavigationButtons.SetActive(false);
             LobbyScreenNavigationButtons.transform.SetParent(LobbyScreen.transform);
-            LobbyScreenNavigationButtons.transform.position = NavigationButtons.transform.position;
-            LobbyScreenNavigationButtons.transform.GetChild(0).gameObject.transform.localPosition
-                = NavigationButtons.transform.GetChild(0).gameObject.transform.localPosition;
-            LobbyScreenNavigationButtons.transform.GetChild(1).gameObject.transform.localPosition
-                = NavigationButtons.transform.GetChild(1).gameObject.transform.localPosition;
             LobbyScreenNavigationButtons.name = "LobbyScreenNavigationButtons";
             LobbyScreenNavigationButtons.transform.GetChild(0).GetChild(0).
                 gameObject.GetComponent<TextMeshProUGUI>().text = "Start Game";
@@ -359,7 +397,7 @@ namespace SCMP.Patches
             LobbyScreenNavigationButtons.transform.GetChild(1).GetComponent<Button>().
                 onClick.RemoveAllListeners();
             LobbyScreenNavigationButtons.transform.GetChild(1).GetComponent<Button>().
-                onClick = cancelEvent;
+                onClick = _cancelButtonClickedEvent;
         }
 
         // Hide Main Menu objects, show Multiplayer Menu objects
@@ -385,7 +423,7 @@ namespace SCMP.Patches
                 CreateMultiplayerMenu();
 
             ShowStartHostGameElements(false);
-            NavigationButtons.SetActive(false);
+            JoinScreenNavigationButtonsObject.SetActive(false);
             ShowMultiplayerMenu(true);
             ShowHostJoinButtons(true);
             ShowJoinMenu(false);
@@ -395,9 +433,9 @@ namespace SCMP.Patches
         private static void OnBackClicked()
         {
             ShowMultiplayerMenu(false);
-            LobbyScreenNavigationButtons.SetActive(false);
             ShowHostJoinButtons(true);
-            NavigationButtons.SetActive(false);
+            LobbyScreenNavigationButtons.SetActive(false);
+            JoinScreenNavigationButtonsObject.SetActive(false);
             LobbyScreen.SetActive(false);
             ShowJoinMenu(false);
         }
@@ -406,8 +444,7 @@ namespace SCMP.Patches
         private static void OnHostClicked()
         {
             ShowHostJoinButtons(false);
-            //NavigationButtons.SetActive(true);
-            ChangeNavigationButtonText("Start Game");
+            JoinScreenNavigationButtonsObject.SetActive(false);
             ShowJoinMenu(false);
             ShowStartHostGameElements(true);
         }
@@ -416,16 +453,16 @@ namespace SCMP.Patches
         private static void OnJoinClicked()
         {
             ShowHostJoinButtons(false);
-            NavigationButtons.SetActive(true);
-            ChangeNavigationButtonText("Join Game");
+            JoinScreenNavigationButtonsObject.SetActive(true);
             ShowJoinMenu(true);
         }
 
         // Listener method when Cancel button on Multiplayer menu is clicked
         private static void OnCancelClicked()
         {
-            NavigationButtons.SetActive(false);
+            JoinScreenNavigationButtonsObject.SetActive(false);
             LobbyScreenNavigationButtons.SetActive(false);
+            HostGameScreenNavigationButtons.SetActive(false);
             ShowJoinMenu(false);
             ShowHostJoinButtons(true);
             ShowStartHostGameElements(false);
@@ -561,7 +598,8 @@ namespace SCMP.Patches
         private static void ShowStartHostGameElements(bool state)
         {
             HostGameScreen.SetActive(state);
-            LobbyScreenNavigationButtons.SetActive(!state);
+            HostGameScreenNavigationButtons.SetActive(state);
+            LobbyScreenNavigationButtons.SetActive(state);
         }
 
         private static void ShowJoinMenu(bool state)
@@ -569,6 +607,7 @@ namespace SCMP.Patches
             ShowIpField(state);
             ShowPortField(state);
             ShowNameField(state);
+            JoinScreenNavigationButtonsObject.SetActive(state);
         }
 
         private static void ShowIpField(bool state)
@@ -583,10 +622,6 @@ namespace SCMP.Patches
             PortTextObject.SetActive(state);
         }
 
-        private static void JoinHost()
-        {
-
-        }
 
         private static void ShowNameField(bool state)
         {
@@ -594,18 +629,13 @@ namespace SCMP.Patches
             NameTextObject.SetActive(state);
         }
 
-        private static void ChangeNavigationButtonText(string text)
-        {
-            NavigationButtons.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = text;
-        }
-
-        private static void StartServer()
+        private static void StartLobby()
         {
             LobbyPlayers = new List<GameObject>();
             LobbyScreen.SetActive(true);
             ShowStartHostGameElements(false);
             LobbyScreenNavigationButtons.SetActive(true);
-            HostGameScreen.transform.localPosition = newGameCopy.transform.localPosition;
+            HostGameScreen.transform.localPosition = _newGameCopy.transform.localPosition;
             GameObject playerCopy = HostGameScreenNavigationButtons.
                 transform.GetChild(0).gameObject;
             GameObject player = Object.Instantiate(playerCopy);
@@ -636,6 +666,12 @@ namespace SCMP.Patches
                 p.transform.localPosition = new Vector3(666f,825f-(playerBoxHeight*spacing),0f);
                 spacing++;
             }
+        }
+
+        private static void JoinHost()
+        {
+            Helpers.WriteToFile(_serverFilePath, [IpInputField.text, PortInputField.text]);
+            Debug.Log($"Joining server...");
         }
 
         private static void SetVersionText()

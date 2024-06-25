@@ -232,7 +232,7 @@ namespace SCMP
             }
         }
 
-        public static void WriteToFile(string filePath, string value)
+        public static bool WriteToFile(string filePath, string value)
         {
             if (!File.Exists(filePath))
             {
@@ -253,9 +253,43 @@ namespace SCMP
             catch (Exception e)
             {
                 Console.WriteLine($"Error writing to file: {e.Message}");
+                return false;
             }
 
             Console.WriteLine($"Finished writing to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+            return true;
+        }
+
+        public static bool WriteToFile(string filePath, params string[] values)
+        {
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine($"{filePath} does not exist, creating it");
+                File.Create(filePath).Close();
+                Console.WriteLine($"{filePath} was created");
+            }
+
+            try
+            {
+                Console.WriteLine($"Attempting to write to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+                using (StreamWriter writer = new StreamWriter(filePath, true))
+                {
+                    foreach (string value in values)
+                    {
+                        writer.WriteLine($"{value},");
+                    }
+
+                    writer.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error writing to file: {e.Message}");
+                return false;
+            }
+
+            Console.WriteLine($"Finished writing to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
+            return true;
         }
     }
 
