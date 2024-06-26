@@ -32,16 +32,4 @@ class Program
             server.Stop();
         }
     }
-
-    public static byte[] StringToBytes(string str)
-    {
-        var bytes = new byte[str.Length];
-
-        for (int i = 0; i < str.Length; i++)
-        {
-            bytes[i] = unchecked((byte)str[i]); // Faster
-        }
-
-        return bytes;
-    }
 }

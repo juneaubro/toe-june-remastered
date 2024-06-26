@@ -89,8 +89,17 @@ class Program
         {
             string line = "";
 
-            while (!client.GameProcess.HasExited)
+            // client loop
+            while (true)
             {
+                if (client.GameProcess.HasExited)
+                {
+                    Console.WriteLine("Exiting...");
+                    client.DisconnectAndStop();
+                    Thread.Sleep(500);
+                    break;
+                }
+
                 // if defined, this process will not close by itself due to ReadLine not being interuptable
 #if CUSTOM_SERVER_SEND
                 line = Console.ReadLine();
@@ -106,13 +115,8 @@ class Program
                 
                 client.Send(client.Endpoint, line);
 #endif
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
-
-            Console.WriteLine("Disconnecting...");
-            client.DisconnectAndStop();
-            Console.WriteLine("Exiting...");
-            Thread.Sleep(500);
         }
     }
 

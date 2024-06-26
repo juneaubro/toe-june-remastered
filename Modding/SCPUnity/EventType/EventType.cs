@@ -2,7 +2,8 @@
 
 public enum EventType
 {
-    Join = 0,
+    Acknowledge = 0,
+    Join,
     JoinLobby,
     Leave,
     LeaveLobby,
@@ -10,5 +11,7 @@ public enum EventType
     UpdateLocation,
     StartGame,
     EndGame,
-    KickPlayer
+    KickPlayer,
+    MessageSent,
+    MessageReceived
 }

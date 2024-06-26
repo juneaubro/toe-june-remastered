@@ -16,6 +16,7 @@ internal class Client : UdpClient
     private int _port;
     private string _username;
     private bool _stop;
+    private bool _connected;
     private int _retryAttempts = 0;
 
     public Client(string aAddress, int aPort, string aUsername, bool gameRunning = false) : base(aAddress, aPort)
@@ -102,18 +103,45 @@ internal class Client : UdpClient
 
     protected override void OnConnected()
     {
+        if (Send($"{(int)EventType.Acknowledge}") > 0)
+        {
+            //_connected = true;
+        }
+
+        // Force this thread to wait for server to acknowledge
+        EndPoint endpoint = Endpoint;
+        string temp = Receive(ref endpoint, 1);
+
+        if (_stop)
+            return;
+
+        if (int.TryParse(temp, out int typeInt))
+        {
+            // if received the acknowledge, am actually connected to a server
+            if ((EventType)typeInt == EventType.Acknowledge)
+                _connected = true;
+        }
+
         string connectMessage = $"{(int)EventType.Join}{_username}\0";
-        char[] badChars = {'\r', '\n' };
+        char[] badChars =  {'\r', '\n'};
 
         foreach (char c in badChars)
         {
             while (connectMessage.Contains(c))
-                connectMessage = connectMessage.Remove(connectMessage.IndexOf(c));
+            {
+                connectMessage = connectMessage.Remove(connectMessage.IndexOf(c), 1);
+            }
         }
 
-        if (Send($"{(int)EventType.Join}{_username}\0") > 0)
+        if (Send(connectMessage) > 0 && _connected)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Connected");
+            Console.ResetColor();
+        }
+        else
+        {
+            DisconnectAndStop();
         }
 
         // Start receive datagrams
@@ -123,17 +151,66 @@ internal class Client : UdpClient
     protected override void OnDisconnected()
     {
         // Try to connect again
-        if (!_stop)
+        if (!_stop && _retryAttempts < 3)
         {
-            Console.WriteLine($"Disconnected");
-            Thread.Sleep(3000);
+            _retryAttempts++;
+            _connected = false;
+            Console.WriteLine("Connection failed, retrying...");
+            Thread.Sleep(5000);
             Connect();
+        }
+
+        if (!_stop && _retryAttempts >= 3)
+        {
+            Console.WriteLine("Can't connect to the specified server");
         }
     }
 
     protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
     {
-        Console.WriteLine("Incoming: " + Encoding.UTF8.GetString(buffer, (int)offset, (int)size));
+        if (endpoint != Endpoint)
+        {
+            Console.WriteLine("Incoming: " + Encoding.UTF8.GetString(buffer, (int)offset, (int)size));
+
+            string message = Encoding.Default.GetString(buffer);
+
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(buffer);
+
+            EventType type = (EventType)BitConverter.ToInt32(buffer, 0);
+
+            switch (type)
+            {
+                case EventType.Acknowledge:
+                    _connected = true;
+                    Console.WriteLine($"_connected : {_connected}");
+                    break;
+                case EventType.Join:
+                    break;
+                case EventType.JoinLobby:
+                    break;
+                case EventType.Leave:
+                    break;
+                case EventType.LeaveLobby:
+                    break;
+                case EventType.UpdateRotation:
+                    break;
+                case EventType.UpdateLocation:
+                    break;
+                case EventType.StartGame:
+                    break;
+                case EventType.EndGame:
+                    break;
+                case EventType.KickPlayer:
+                    break;
+                case EventType.MessageSent:
+                    break;
+                case EventType.MessageReceived:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         // Continue receive datagrams
         ReceiveAsync();
