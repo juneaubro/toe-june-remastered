@@ -19,6 +19,8 @@ class Server : UdpServer
 
     private List<int> idList;
 
+
+
     public Server(IPAddress aAddress, int aPort) : base(aAddress, aPort)
     {
         port = aPort;
@@ -43,15 +45,7 @@ class Server : UdpServer
             string message = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
             int.TryParse(message[0].ToString(), out var typeInt);
             EventType type = (EventType)typeInt;
-
-            // idk why it decides to send big endian for a single message then little endian
-            //if (BitConverter.IsLittleEndian)
-            //{
-            //    Array.Reverse(buffer);
-            //}
-
-            //EventType type = (EventType)BitConverter.ToInt32(typeInt, 0);
-
+            
 
             switch (type)
             {
@@ -63,11 +57,11 @@ class Server : UdpServer
 
                     for (uint i = 1; i < size; i++)
                     {
-                        if (chars[i] == '\n' || chars[i] == '\r')
-                            continue;
-
                         if (chars[i] == '\0')
                             break;
+
+                        if (chars[i] == '\n' || chars[i] == '\r')
+                            continue;
 
                         client.username += chars[i];
                     }
@@ -76,8 +70,8 @@ class Server : UdpServer
                     while (idList.Contains(id))
                     {
                         id = GenerateId();
-                        idList.Add(id);
                     }
+                    idList.Add(id);
 
                     client.id = id;
                     client.endpoint = endpoint;
@@ -96,12 +90,40 @@ class Server : UdpServer
                 case EventType.EndGame:
                     break;
                 case EventType.Acknowledge:
-                    Console.WriteLine("ACK received");
-                    Send(endpoint, $"{(int)EventType.Acknowledge}");
-                    Console.WriteLine($"ACK sent to endpoint {endpoint}");
+                    string lobbyInfoToSend =
+                        $@"{Directory.GetCurrentDirectory()}\bin\lobbyinfo.txt";
+                    if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name != "SCMP")
+                        lobbyInfoToSend = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\lobbyinfo.txt";
+
+                    Utilities.WaitForFile(lobbyInfoToSend);
+                    string lobbyInfo = Utilities.ReadFileBytes(lobbyInfoToSend);
+
+                    // SPLIT THE STRING WITH A COMMA DELIMITER
+                    string[] playerNames = lobbyInfo.Split(',');
+                    char[] badChars = { '\r', '\n', ','};
+                    lobbyInfo = $"{playerNames.Length}\0";
+                    foreach (string name in playerNames)
+                    {
+                        string temp = name;
+                        foreach (char c in badChars)
+                        {
+                            while (temp.Contains(c))
+                            {
+                                temp = temp.Remove(temp.IndexOf(c), 1);
+                            }
+                        }
+
+                        if(temp != "")
+                            lobbyInfo += $"{temp},";
+                    }
+
+                    // don't send trailing comma
+                    lobbyInfo = lobbyInfo.Remove(lobbyInfo.Length - 1, 1);
+
+                    Console.WriteLine(lobbyInfo);
+                    Send(endpoint, EventType.Acknowledge);
+                    Send(endpoint, EventType.Acknowledge, lobbyInfo);
                     break;
-                case EventType.JoinLobby:
-                case EventType.LeaveLobby:
                 case EventType.KickPlayer:
                 case EventType.MessageSent:
                 case EventType.MessageReceived:
@@ -124,7 +146,6 @@ class Server : UdpServer
 
     protected override void OnSent(EndPoint endpoint, long sent)
     {
-        //base.OnSent(endpoint, sent);
 
         ReceiveAsync();
     }
@@ -137,5 +158,15 @@ class Server : UdpServer
     private int GenerateId()
     {
         return new Random().Next(0, int.MaxValue / 25);
+    }
+
+    private long Send(EndPoint endpoint, EventType eventType, string value = "")
+    {
+        return Send(endpoint, $"{(int)eventType}{value}");
+    }
+
+    private long Send(EndPoint endpoint, EventType eventType, byte[] value)
+    {
+        return Send(endpoint, $"{(int)eventType}{value}");
     }
 }

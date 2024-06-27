@@ -28,12 +28,6 @@
             case EventType.EndGame:
                 Format(eventString, ConsoleColor.Magenta, ConsoleColor.DarkMagenta);
                 break;
-            case EventType.JoinLobby:
-                Format(eventString, ConsoleColor.Green, ConsoleColor.DarkGreen);
-                break;
-            case EventType.LeaveLobby:
-                Format(eventString, ConsoleColor.Red, ConsoleColor.DarkRed);
-                break;
             case EventType.KickPlayer:
                 Format(eventString, ConsoleColor.Red, ConsoleColor.DarkRed);
                 break;

@@ -1,11 +1,14 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using Debug = UnityEngine.Debug;
 
 namespace SCMP.Patches
 {
@@ -28,10 +31,13 @@ namespace SCMP.Patches
         private static bool _validatingIp = false;
         private static bool _validatingPort = false;
         private static bool _validatingName = false;
+        private static bool _isHost = false;
         private static string _serverFileName = null;
         private static string _serverTxtPath = null;
+        private static string _lobbyInfoFileName = null;
+        private static string _lobbyInfoTxtPath = null;
 
-
+        public static Process ServerProcess = null;
         public static MainMenu _instance = null;
         public static GameObject MultiplayerButtonObject;
         public static Button MultiplayerButton;
@@ -67,12 +73,14 @@ namespace SCMP.Patches
         public static GameObject JoinScreenJoinButtonObject;
         public static GameObject JoinScreenCancelButtonObject;
         public static GameObject HostGameScreen;
+        public static TMP_InputField HostScreenPlayerNameInputField;
+        public static TextMeshProUGUI HostScreenPlayerNameInputFieldText;
         public static GameObject HostGameScreenNavigationButtons;
         public static GameObject HostGameScreenStartButtonObject;
         public static GameObject HostGameScreenCancelButtonObject;
         public static GameObject LobbyScreen;
         public static List<GameObject> LobbyPlayers;
-        public static GameObject HostGameScreenPlayerName;
+        public static GameObject HostScreenPlayerNameObject;
         public static GameObject HostGameScreenSeed;
         public static GameObject LobbyScreenNavigationButtons;
 
@@ -100,6 +108,8 @@ namespace SCMP.Patches
 
         private static void Initialize()
         {
+            LobbyPlayers = new List<GameObject>();
+
             _buttonStack = _instance.mainMenuButtons.transform.GetChild(0).gameObject;
             _newGameCopy = _instance.transform.GetChild(0).GetChild(2).gameObject;
             _backgroundImage = _instance.transform.GetChild(0).GetChild(2).GetChild(0).gameObject;
@@ -123,13 +133,16 @@ namespace SCMP.Patches
             CreateMultiplayerMenu();
 
             _serverFileName = "server.txt";
+            _lobbyInfoFileName = "lobbyinfo.txt";
             if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
             {
                 _serverTxtPath = $@"{Directory.GetCurrentDirectory()}\bin\{_serverFileName}";
+                _lobbyInfoTxtPath = $@"{Directory.GetCurrentDirectory()}\bin\{_lobbyInfoFileName}";
             }
             else
             {
                 _serverTxtPath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\{_serverFileName}";
+                _lobbyInfoTxtPath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\{_lobbyInfoFileName}";
             }
         }
 
@@ -306,7 +319,7 @@ namespace SCMP.Patches
             NameInputFieldObject.name = "NameInputField";
             NamePlaceholderText =
                 NameInputFieldObject.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
-            NamePlaceholderText.text = $"ex. SCMP_{UnityEngine.Random.RandomRangeInt(1, 999999999)}";
+            NamePlaceholderText.text = $"ex. SCMP_{UnityEngine.Random.RandomRangeInt(1, 1000)}";
 
             // MULTIPLAYER MENU : NAVIGATION BUTTONS
             GameObject navCopy = _instance.transform.GetChild(0).GetChild(2).GetChild(2).gameObject;
@@ -367,12 +380,14 @@ namespace SCMP.Patches
 
             // MULTIPLAYER MENU : HOST GAME SCREEN : PLAYER NAME
             string dBoyRandomNumber = $"D-{UnityEngine.Random.RandomRangeInt(1, 9999)}";
-            HostGameScreenPlayerName = HostGameScreen.transform.GetChild(1).GetChild(3)
+            HostScreenPlayerNameObject = HostGameScreen.transform.GetChild(1).GetChild(3)
                 .GetChild(0).gameObject;
-            HostGameScreenPlayerName.transform.GetChild(0).GetChild(0).GetChild(1).gameObject
-                .GetComponent<TextMeshProUGUI>().text = dBoyRandomNumber;
-            HostGameScreenPlayerName.transform.GetChild(0).gameObject
-                .GetComponent<TMP_InputField>().text = dBoyRandomNumber;
+            HostScreenPlayerNameInputField = HostScreenPlayerNameObject.transform.GetChild(0).gameObject
+                .GetComponent<TMP_InputField>();
+            HostScreenPlayerNameInputField.text = dBoyRandomNumber;
+            HostScreenPlayerNameInputFieldText = HostScreenPlayerNameObject.transform.GetChild(0).GetChild(0)
+                .GetChild(1).gameObject.GetComponent<TextMeshProUGUI>();
+            HostScreenPlayerNameInputFieldText.text = dBoyRandomNumber;
 
             // MULTIPLAYER MENU : LOBBY SCREEN
             LobbyScreen = new GameObject();
@@ -431,6 +446,7 @@ namespace SCMP.Patches
         // Listener method when Back button on Main Menu is clicked
         private static void OnBackClicked()
         {
+            _isHost = false;
             ShowMultiplayerMenu(false);
             ShowHostJoinButtons(true);
             LobbyScreenNavigationButtons.SetActive(false);
@@ -442,6 +458,7 @@ namespace SCMP.Patches
         // Listener method when Host button on Multiplayer menu is clicked
         private static void OnHostClicked()
         {
+            _isHost = true;
             ShowHostJoinButtons(false);
             JoinScreenNavigationButtonsObject.SetActive(false);
             ShowJoinMenu(false);
@@ -451,6 +468,7 @@ namespace SCMP.Patches
         // Listener method when Join button on Multiplayer menu is clicked
         private static void OnJoinClicked()
         {
+            _isHost = false;
             ShowHostJoinButtons(false);
             JoinScreenNavigationButtonsObject.SetActive(true);
             ShowJoinMenu(true);
@@ -459,6 +477,7 @@ namespace SCMP.Patches
         // Listener method when Cancel button on Multiplayer menu is clicked
         private static void OnCancelClicked()
         {
+            _isHost = false;
             JoinScreenNavigationButtonsObject.SetActive(false);
             LobbyScreenNavigationButtons.SetActive(false);
             HostGameScreenNavigationButtons.SetActive(false);
@@ -629,25 +648,94 @@ namespace SCMP.Patches
 
         private static void StartLobby()
         {
-            LobbyPlayers = new List<GameObject>();
-            LobbyScreen.SetActive(true);
-            ShowStartHostGameElements(false);
-            LobbyScreenNavigationButtons.SetActive(true);
-            HostGameScreen.transform.localPosition = _newGameCopy.transform.localPosition;
             GameObject playerCopy = HostGameScreenNavigationButtons.
                 transform.GetChild(0).gameObject;
             GameObject player = Object.Instantiate(playerCopy);
+            player.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = 
+                HostScreenPlayerNameObject.transform.GetChild(0).GetComponent<TMP_InputField>().text;
             LobbyPlayers.Add(player);
-            LoadLobbyPlayers();
+
+
+            bool foundServer = false;
+            string serverFilePath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\Server.exe";
+            if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
+            {
+                serverFilePath = $@"{Directory.GetCurrentDirectory()}\Server.exe";
+            }
+
+            string serverPidPath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\serverpid.txt";
+            if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
+            {
+                serverPidPath = $@"{Directory.GetCurrentDirectory()}\bin\serverpid.txt";
+            }
+
+            Console.WriteLine($"Waiting for {serverPidPath}");
+            Helpers.WaitForFile(serverPidPath);
+            string serverPid = Helpers.ReadFileBytes(serverPidPath);
+            if (!string.IsNullOrEmpty(serverPid))
+            {
+                int.TryParse(serverPid, out int pid);
+                try
+                {
+                    ServerProcess = Process.GetProcessById(pid);
+                    Console.WriteLine("Successfully obtained server process");
+                    foundServer = true;
+
+                }
+                catch (ArgumentException e)
+                {
+                    Console.WriteLine("No server process found, starting one");
+                    ServerProcess = new Process();
+                    ServerProcess.StartInfo.FileName = serverFilePath;
+                    ServerProcess.StartInfo.UseShellExecute = true;
+                    ServerProcess.StartInfo.CreateNoWindow = true;
+                    ServerProcess.StartInfo.Arguments = "-gameStarted";
+
+                    if (ServerProcess.Start())
+                    {
+                        Console.WriteLine("Server successfully started");
+                    }
+                }
+            }
+
+            //if (!foundServer)
+            //{
+            //    Console.WriteLine("No server process found, starting one");
+            //    ServerProcess = new Process();
+            //    ServerProcess.StartInfo.FileName = serverFilePath;
+            //    ServerProcess.StartInfo.UseShellExecute = false;
+            //    ServerProcess.StartInfo.CreateNoWindow = true;
+            //    ServerProcess.StartInfo.Arguments = "-gameStarted";
+
+            //    if (ServerProcess.Start())
+            //    {
+            //        Console.WriteLine("Server successfully started");
+            //    }
+            //}
+
+            // TODO: BEFORE LOADING LOBBY PLAYERS, NEED TO ADD ALREADY CONNECTED CLIENTS TO LOBBYPLAYERS FROM SERVER'S CLIENTLIST
+            JoinHost();
+            //LoadLobbyPlayers();
         }
 
         private static void LoadLobbyPlayers()
         {
+            LobbyScreen.SetActive(true);
+            ShowStartHostGameElements(false);
+            ShowJoinMenu(false);
+            LobbyScreenNavigationButtons.SetActive(true);
+            HostGameScreen.transform.localPosition = _newGameCopy.transform.localPosition;
+
+
             int spacing = 0;
+            int padding = 4;
             int playerBoxHeight = 38;
+            string[] playerNames = new string[LobbyPlayers.Count];
+
             for(int i = 0; i < LobbyScreen.transform.childCount; i++)
             {
-                if(LobbyScreen.transform.GetChild(i).gameObject!=null&& LobbyScreen.transform.GetChild(i).gameObject!=LobbyScreenNavigationButtons)
+                if(LobbyScreen.transform.GetChild(i).gameObject != null && 
+                   LobbyScreen.transform.GetChild(i).gameObject != LobbyScreenNavigationButtons)
                     Object.Destroy(LobbyScreen.transform.GetChild(i).gameObject);
             }
             
@@ -657,33 +745,75 @@ namespace SCMP.Patches
                 p.name = "PlayerInLobby";
                 p.transform.GetChild(0).gameObject.name = "PlayerInLobbyText";
                 p.GetComponent<Button>().onClick.RemoveAllListeners();
-                p.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().
-                    text = HostGameScreenPlayerName.transform.GetChild(0).GetComponent<TMP_InputField>().text;
-                p.gameObject.transform.SetParent(LobbyScreen.transform);
+                p.transform.SetParent(LobbyScreen.transform);
                 p.transform.position = _backgroundImage.transform.position;
-                p.transform.localPosition = new Vector3(666f,825f-(playerBoxHeight*spacing),0f);
+                p.transform.localPosition = new Vector3(666f, (825f - (playerBoxHeight * spacing)) + padding, 0f);
+
+                playerNames[spacing] = p.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text;
+
                 spacing++;
+            }
+
+            if (_isHost)
+            {
+                Console.WriteLine($"Writing to file : {_lobbyInfoTxtPath}");
+                Helpers.WriteToFile(_lobbyInfoTxtPath, playerNames);
             }
         }
 
         private static void JoinHost()
         {
+            string ip = "";
+            string port = "";
+            string username = "";
+
             // If IP, port, or name are empty, give it the default value (respective placeholder text)
             if (string.IsNullOrEmpty(IpInputField.text))
             {
                 IpInputField.text = IpPlaceholderText.text.Substring(IpPlaceholderText.text.IndexOf(' ') + 1);
-            }
+                ip = IpInputField.text;
+            } 
+
             if (string.IsNullOrEmpty(PortInputField.text))
             {
                 PortInputField.text = PortPlaceholderText.text.Substring(PortPlaceholderText.text.IndexOf(' ') + 1);
-            }
-            if (string.IsNullOrEmpty(NameInputField.text))
-            {
-                NameInputField.text = NamePlaceholderText.text.Substring(NamePlaceholderText.text.IndexOf(' ') + 1);
+                port = PortInputField.text;
             }
 
-            Helpers.WriteToFile(_serverTxtPath, [IpInputField.text, PortInputField.text, NameInputField.text]);
-            Debug.Log($"Joining server...");
+            if (string.IsNullOrEmpty(NameInputField.text) && !_isHost)
+            {
+                NameInputField.text = NamePlaceholderText.text.Substring(NamePlaceholderText.text.IndexOf(' ') + 1);
+                username = NameInputField.text;
+            } 
+            else if (_isHost)
+            {
+                username = HostScreenPlayerNameInputFieldText.text;
+            }
+            
+            Console.WriteLine($"username : {username}");
+            //Helpers.WriteToFile(_serverTxtPath, [IpInputField.text, PortInputField.text, NameInputField.text]);
+            Helpers.WriteToFile(_serverTxtPath, [ip, port, username]);
+            Debug.Log($"Getting lobby info...");
+                
+            // TODO: NEED TO CHANGE THIS TO HAVE SERVER.CS WRITE LOBBY INFO WHENEVER SOMEONE NEW ACKNOWLEDGES
+            if (!_isHost)
+            {
+                Helpers.WaitForFile(_lobbyInfoTxtPath, FileAccess.Read, FileShare.None, 2000);
+                string playerNames = Helpers.ReadFileBytes(_lobbyInfoTxtPath);
+                foreach (string name in playerNames.Split(','))
+                {
+                    GameObject newPlayer =
+                        Object.Instantiate(HostGameScreenNavigationButtons.transform.GetChild(0).gameObject);
+                    newPlayer.name = name;
+                    newPlayer.GetComponent<Button>().onClick.RemoveAllListeners();
+                    newPlayer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = name;
+                    LobbyPlayers.Add(newPlayer);
+
+                    Debug.Log(name);
+                }
+            }
+
+            LoadLobbyPlayers();
         }
 
         private static void SetVersionText()

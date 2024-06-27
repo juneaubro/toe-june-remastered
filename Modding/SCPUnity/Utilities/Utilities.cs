@@ -115,10 +115,25 @@
     /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
     /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
     /// <param name="milliseconds">Time in milliseconds for <see cref="Thread"/> to sleep before checking <see cref="File"/> again</param>
-    /// <param name="optionalBool">Optional <see langword="bool"/> to check each iteration</param>
-    public static void WaitForFile(string filePath, ref bool optionalBool, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
+    public static void WaitForFile(string filePath, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
     {
-        while (!IsFileReady(filePath, fileAccess, fileShare) && !optionalBool)
+        while (!IsFileReady(filePath, fileAccess, fileShare))
+        {
+            Thread.Sleep(milliseconds);
+        }
+    }
+
+    /// <summary>
+    /// Wait for file to be available
+    /// </summary>
+    /// <param name="filePath">Path to <see cref="File"/> to wait for</param>
+    /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
+    /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
+    /// <param name="milliseconds">Time in milliseconds for <see cref="Thread"/> to sleep before checking <see cref="File"/> again</param>
+    /// <param name="end"><see langword="bool"/> to check if false each iteration</param>
+    public static void WaitForFile(string filePath, ref bool end, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
+    {
+        while (!IsFileReady(filePath, fileAccess, fileShare) && !end)
         {
             Thread.Sleep(milliseconds);
         }

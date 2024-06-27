@@ -1,17 +1,14 @@
-﻿using System;
-
-public enum EventType
+﻿public enum EventType
 {
-    Acknowledge = 0,
+    Acknowledge,
     Join,
-    JoinLobby,
     Leave,
-    LeaveLobby,
     UpdateRotation,
     UpdateLocation,
     StartGame,
     EndGame,
     KickPlayer,
     MessageSent,
-    MessageReceived
+    MessageReceived,
+    LobbyInfo
 }

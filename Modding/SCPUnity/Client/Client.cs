@@ -17,7 +17,9 @@ internal class Client : UdpClient
     private string _username;
     private bool _stop;
     private bool _connected;
+    private bool _inLobby;
     private int _retryAttempts = 0;
+    private string[] _playerNames;
 
     public Client(string aAddress, int aPort, string aUsername, bool gameRunning = false) : base(aAddress, aPort)
     {
@@ -26,6 +28,7 @@ internal class Client : UdpClient
         _username = aUsername;
         Instance = this;
         GameRunningFirst = gameRunning;
+        _inLobby = true;
 
         // Game might have started first, if so,
         // current directory is already the game folder
@@ -103,24 +106,27 @@ internal class Client : UdpClient
 
     protected override void OnConnected()
     {
-        if (Send($"{(int)EventType.Acknowledge}") > 0)
+        // Give it a second to send acknowledge
+        Thread.Sleep(1000);
+
+        if (Send(EventType.Acknowledge) > 0)
         {
             //_connected = true;
         }
 
         // Force this thread to wait for server to acknowledge
         EndPoint endpoint = Endpoint;
-        string temp = Receive(ref endpoint, 1);
+        string recv = Receive(ref endpoint, 1);
 
-        if (_stop)
-            return;
-
-        if (int.TryParse(temp, out int typeInt))
+        if (int.TryParse(recv, out int typeInt))
         {
             // if received the acknowledge, am actually connected to a server
             if ((EventType)typeInt == EventType.Acknowledge)
                 _connected = true;
         }
+
+        if (!_connected)
+            return;
 
         string connectMessage = $"{(int)EventType.Join}{_username}\0";
         char[] badChars =  {'\r', '\n'};
@@ -172,43 +178,64 @@ internal class Client : UdpClient
         {
             Console.WriteLine("Incoming: " + Encoding.UTF8.GetString(buffer, (int)offset, (int)size));
 
-            string message = Encoding.Default.GetString(buffer);
+            string message = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
 
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(buffer);
 
             EventType type = (EventType)BitConverter.ToInt32(buffer, 0);
 
+            //string message = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
+            //int.TryParse(message[0].ToString(), out var typeInt);
+            //EventType type = (EventType)typeInt;
+
             switch (type)
             {
                 case EventType.Acknowledge:
-                    _connected = true;
-                    Console.WriteLine($"_connected : {_connected}");
+                    if (_inLobby)
+                    {
+                        _connected = true;
+                        string playerNumberString = message.Substring(0, message.IndexOf('\0') - 1);
+
+                        int.TryParse(playerNumberString, out var numberOfPlayers);
+
+                        // update lobby
+                        _playerNames = new string[numberOfPlayers];
+
+                        string lobbyInfoPath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? $@"{Directory.GetCurrentDirectory()}\bin\lobbyinfo.txt"
+                            : $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\lobbyinfo.txt";
+
+                        _playerNames = message.Substring(message.IndexOf('\0') + 1).Split(',');
+
+                        if (File.Exists(lobbyInfoPath))
+                        {
+                            File.Delete(lobbyInfoPath);
+                        }
+
+                        File.Create(lobbyInfoPath).Close();
+
+                        // WRITE TO LOBBYINFO
+                        Utilities.WriteToFile(lobbyInfoPath, _playerNames);
+
+                        // <-- READ LOBBYINFO IN LOADLOBBYPLAYERS IN MAINMENUPATCH
+                    }
                     break;
                 case EventType.Join:
+                    EventColors.FormatEventTypeOutput(EventType.Join);
+                    Console.WriteLine($"{message.Remove(0, 1)} joined the server");
                     break;
-                case EventType.JoinLobby:
+                case EventType.LobbyInfo:
+                    //_playerNames = message.Split(',');
                     break;
                 case EventType.Leave:
-                    break;
-                case EventType.LeaveLobby:
-                    break;
                 case EventType.UpdateRotation:
-                    break;
                 case EventType.UpdateLocation:
-                    break;
                 case EventType.StartGame:
-                    break;
                 case EventType.EndGame:
-                    break;
                 case EventType.KickPlayer:
-                    break;
                 case EventType.MessageSent:
-                    break;
                 case EventType.MessageReceived:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
         }
 
@@ -221,8 +248,8 @@ internal class Client : UdpClient
         Console.WriteLine($"Client caught an error with code {error}");
     }
 
-    //protected override void OnSent(EndPoint endpoint, long sent)
-    //{
-    //    ReceiveAsync();
-    //}
+    private long Send(EventType eventType, string value = "")
+    {
+        return Send($"{(int)eventType}{value}");
+    }
 }

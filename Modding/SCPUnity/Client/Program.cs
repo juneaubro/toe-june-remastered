@@ -75,7 +75,10 @@ class Program
         if (_quitBeforeServerInfo)
             return;
 
+
         Client client = new Client(_address, _port, _username, _gameRunning);
+
+        //WaitForLobbyInfo();
 
         if (client.StartupError)
         {
@@ -173,6 +176,36 @@ class Program
 
         return !_quitBeforeServerInfo;
     }
+
+    //public static bool WaitForLobbyInfo()
+    //{
+    //    string path = $@"{_binDirectory}\lobbyinfo.txt";
+
+    //    if (!Directory.Exists(_binDirectory))
+    //        Directory.CreateDirectory(_binDirectory);
+
+    //    if (File.Exists(path))
+    //        File.Delete(path);
+
+    //    File.Create(path).Close();
+    //    Utilities.WaitForFile(path, ref _quitBeforeServerInfo);
+
+    //    if (!_quitBeforeServerInfo)
+    //    {
+    //        string temp = Utilities.ReadFileBytes(path);
+    //        string[] serverInfo = temp.Split(',');
+    //        _address = serverInfo[0];
+    //        int.TryParse(serverInfo[1], out _port);
+    //        _username = serverInfo[2];
+    //    }
+    //    else
+    //    {
+    //        Console.WriteLine("Game process exited before retrieving server info, exiting...");
+    //        Thread.Sleep(1000);
+    //    }
+
+    //    return !_quitBeforeServerInfo;
+    //}
 
     public static void WritePID()
     {
