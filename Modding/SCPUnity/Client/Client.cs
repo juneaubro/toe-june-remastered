@@ -7,6 +7,7 @@ using UdpClient = NetCoreServer.UdpClient;
 internal class Client : UdpClient
 {
     public static Client Instance = null!;
+    public static Utilities Utils = new();
     public bool StartupError = false;
     public Process GameProcess;
     public IntPtr GameHandle = IntPtr.Zero;
@@ -30,20 +31,14 @@ internal class Client : UdpClient
         GameRunningFirst = gameRunning;
         _inLobby = true;
 
-        // Game might have started first, if so,
-        // current directory is already the game folder
-        string gamePath = "";
-        gamePath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe"
-            : $@"{Directory.GetCurrentDirectory()}\SCP Unity.exe";
-
         if (!GameRunningFirst)
         {
-            if (File.Exists(gamePath))
+            if (File.Exists(Utils.GameFilePath))
             {
                 Console.WriteLine("Found game exe, starting process");
                 GameProcess = new Process();
                 GameProcess.StartInfo.UseShellExecute = false;
-                GameProcess.StartInfo.FileName = gamePath;
+                GameProcess.StartInfo.FileName = Utils.GameFilePath;
 
                 if (GameProcess.Start())
                 {
@@ -106,12 +101,19 @@ internal class Client : UdpClient
 
     protected override void OnConnected()
     {
-        // Give it a second to send acknowledge
+        //if (File.Exists(Utils.ServerPidPath))
+        //{
+        //    File.Delete(Utils.ServerPidPath);
+        //    File.Create(Utils.ServerPidPath);
+        //}
+
+        // Wait for server to spin up
+        Utils.WaitForFile(Utils.ServerPidPath, false, FileAccess.ReadWrite, FileShare.Write, 3000);
         Thread.Sleep(1000);
+        Console.WriteLine($"Server process id : {Utils.ReadFileBytes(Utils.ServerPidPath)}");
 
         if (Send(EventType.Acknowledge) > 0)
         {
-            //_connected = true;
         }
 
         // Force this thread to wait for server to acknowledge
@@ -120,7 +122,7 @@ internal class Client : UdpClient
 
         if (int.TryParse(recv, out int typeInt))
         {
-            // if received the acknowledge, am actually connected to a server
+            // if received the acknowledge, actually connected to a server
             if ((EventType)typeInt == EventType.Acknowledge)
                 _connected = true;
         }
@@ -202,22 +204,10 @@ internal class Client : UdpClient
                         // update lobby
                         _playerNames = new string[numberOfPlayers];
 
-                        string lobbyInfoPath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? $@"{Directory.GetCurrentDirectory()}\bin\lobbyinfo.txt"
-                            : $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\lobbyinfo.txt";
-
                         _playerNames = message.Substring(message.IndexOf('\0') + 1).Split(',');
 
-                        if (File.Exists(lobbyInfoPath))
-                        {
-                            File.Delete(lobbyInfoPath);
-                        }
-
-                        File.Create(lobbyInfoPath).Close();
-
-                        // WRITE TO LOBBYINFO
-                        Utilities.WriteToFile(lobbyInfoPath, _playerNames);
-
-                        // <-- READ LOBBYINFO IN LOADLOBBYPLAYERS IN MAINMENUPATCH
+                        Utils.WaitForFile(Utils.LobbyInfoFilePath, false, FileAccess.Write, FileShare.ReadWrite);
+                        Utils.WriteToFile(Utils.LobbyInfoFilePath, _playerNames);
                     }
                     break;
                 case EventType.Join:
@@ -225,7 +215,6 @@ internal class Client : UdpClient
                     Console.WriteLine($"{message.Remove(0, 1)} joined the server");
                     break;
                 case EventType.LobbyInfo:
-                    //_playerNames = message.Split(',');
                     break;
                 case EventType.Leave:
                 case EventType.UpdateRotation:

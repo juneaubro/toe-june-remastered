@@ -11,10 +11,77 @@ using Debug = UnityEngine.Debug;
 
 namespace SCMP
 {
-    internal class Helpers
+    class Helpers
     {
+        #region READONLY FIELDS
+        private readonly string CurrentDirectory;
+        private readonly string CurrentFolder;
+
+        public readonly string GameFileName;
+        public readonly string GameFilePath;
+
+        public readonly string BinPath;
+
+        public readonly string LobbyInfoFileName;
+        public readonly string LobbyInfoFilePath;
+
+        public readonly string ServerFileName;
+        public readonly string ServerPidName;
+        public readonly string ServerTxtFileName;
+        public readonly string ServerPidPath;
+        public readonly string ServerFilePath;
+        public readonly string ServerTxtFilePath;
+
+        public readonly string ClientFileName;
+        public readonly string ClientPidName;
+        public readonly string ClientPidPath;
+        public readonly string ClientFilePath;
+        #endregion
+
+
         private static int _level = 0;
         private static Component[] components;
+
+        public Helpers()
+        {
+            CurrentDirectory = Directory.GetCurrentDirectory();
+            CurrentFolder =
+                CurrentDirectory.Substring(CurrentDirectory.LastIndexOf('\\') + 1);
+
+            GameFileName = "SCP Unity.exe";
+            GameFilePath = $@"{CurrentDirectory}\{GameFileName}";
+
+            BinPath = CurrentFolder == "SCMP"
+                ? $@"{CurrentDirectory}\bin\"
+                : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\";
+
+            LobbyInfoFileName = "lobbyinfo.txt";
+            LobbyInfoFilePath = CurrentFolder == "SCMP"
+                ? $@"{CurrentDirectory}\bin\{LobbyInfoFileName}"
+                : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{LobbyInfoFileName}";
+
+            ServerFileName = "Server.exe";
+            ServerPidName = "serverpid.txt";
+            ServerTxtFileName = "server.txt";
+            ServerPidPath = CurrentFolder == "SCMP"
+                ? $@"{CurrentDirectory}\bin\{ServerPidName}"
+                : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{ServerPidName}";
+            ServerFilePath = CurrentFolder == "SCMP"
+                ? $@"{CurrentDirectory}\{ServerFileName}"
+                : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\{ServerFileName}";
+            ServerTxtFilePath = CurrentFolder == "SCMP"
+                ? $@"{CurrentDirectory}\bin\{ServerTxtFileName}"
+                : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{ServerTxtFileName}";
+
+            ClientFileName = "Client.exe";
+            ClientPidName = "pid.txt";
+            ClientPidPath = CurrentFolder == "SCMP"
+                ? $@"{CurrentDirectory}\bin\{ClientPidName}"
+                : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{ClientPidName}";
+            ClientFilePath = CurrentFolder == "SCMP"
+                ? $@"{CurrentDirectory}\{ClientFileName}"
+                : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\{ClientFileName}";
+        }
 
         /// <summary>
         /// Recursively prints all children and components attached to the gameObject, optionally printing to a log file
@@ -209,7 +276,12 @@ namespace SCMP
             try
             {
                 using (FileStream inputStream = File.Open(filePath, FileMode.Open, fileAccess, fileShare))
+                {
+                    if (fileAccess == FileAccess.Write)
+                        return true;
+
                     return inputStream.Length > 0;
+                }
             }
             catch (Exception)
             {

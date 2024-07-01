@@ -20,10 +20,8 @@ namespace SCMP
         internal static ManualLogSource mls;
 
         private static Process _clientConsoleProcess;
-        private static IntPtr _clientConsoleHandle;
-        private static string _filePath;
-        private static string _fileName;
-        static string PLUGIN_PATH = @$"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\";
+
+        private static readonly Helpers Helpers = new ();
 
         void Awake()
         {
@@ -57,11 +55,10 @@ namespace SCMP
 
             foreach (Process process in processes)
             {
-                if (process.StartInfo.FileName == @$"{PLUGIN_PATH}\Client.exe")
+                if (process.StartInfo.FileName == Helpers.ClientFilePath)
                 {
                     Console.WriteLine("Client console process found");
                     _clientConsoleProcess = process;
-                    _clientConsoleHandle = process.Handle;
                     Console.WriteLine($"PID : {process.Id}");
                     found = true;
                     break;
@@ -72,18 +69,17 @@ namespace SCMP
             {
                 try
                 {
-                    Console.WriteLine("Client console process not found, attempting to start Client.exe");
+                    Console.WriteLine("Client console process not found, attempting to start it");
                     _clientConsoleProcess = new Process();
                     _clientConsoleProcess.StartInfo.UseShellExecute = true;
                     _clientConsoleProcess.StartInfo.CreateNoWindow = true;
-                    _clientConsoleProcess.StartInfo.FileName = $@"{PLUGIN_PATH}\Client.exe";
+                    _clientConsoleProcess.StartInfo.FileName = Helpers.ClientFilePath;
                     _clientConsoleProcess.StartInfo.Arguments = "-gameStarted";
 
                     if (_clientConsoleProcess.Start())
                     {
-                        _clientConsoleHandle = _clientConsoleProcess.Handle;
-                        Console.WriteLine("Client.exe was successfully started - attempting to set client console PID again");
-                        Helpers.WaitForFile(pidPath);
+                        Console.WriteLine("Client.exe was successfully started");
+                        //Helpers.WaitForFile(pidPath);
                         //SetClientConsolePID();
                     }
                 }
@@ -97,38 +93,24 @@ namespace SCMP
 
         public void SetClientConsolePID()
         {
-            string binDirectory = $@"{Directory.GetCurrentDirectory()}\bin\";
-
-            if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name != "SCMP")
+            if (File.Exists(Helpers.ClientPidPath))
             {
-                binDirectory = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\";
-            }
-
-            _filePath = $@"{binDirectory}pid.txt";
-            _fileName = _filePath.Substring(_filePath.LastIndexOf('\\') + 1);
-
-            if (!Directory.Exists(binDirectory))
-                Directory.CreateDirectory(binDirectory);
-
-            if (File.Exists(_filePath))
-            {
-                Helpers.WaitForFile(_filePath, FileAccess.ReadWrite);
+                Helpers.WaitForFile(Helpers.ClientPidPath, FileAccess.ReadWrite);
 
                 try
                 {
                     Console.WriteLine("Getting client console PID...");
-                    string pidString = Helpers.ReadFileBytes(_filePath);
+                    string pidString = Helpers.ReadFileBytes(Helpers.ClientPidPath);
 
                     if (int.TryParse(pidString, out int processId))
                     {
                         Console.WriteLine($"PID {processId} retrieved");
                         _clientConsoleProcess = Process.GetProcessById(processId);
-                        _clientConsoleHandle = _clientConsoleProcess.Handle;
                         Console.WriteLine("Successfully acquired client console handle");
                     }
                     else
                     {
-                        Console.WriteLine($"Error while parsing PID from {_fileName}");
+                        Console.WriteLine($"Error while parsing PID from {Helpers.ClientFileName}");
                     }
 
                 }
@@ -137,29 +119,27 @@ namespace SCMP
                     Console.WriteLine(
                         "Could not acquire client console handle");
 
-                    CheckForClientConsole(_filePath);
+                    CheckForClientConsole(Helpers.ClientFilePath);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error reading {_fileName} : {e.Message}");
+                    Console.WriteLine($"Error reading {Helpers.ClientFileName} : {e.Message}");
                 }
             }
             else
             {
-                Console.WriteLine($"{_fileName} not found");
-                CheckForClientConsole(_filePath);
+                Console.WriteLine($"{Helpers.ClientFileName} not found");
+                CheckForClientConsole(Helpers.ClientFilePath);
 
-                string pidString = Helpers.ReadFileBytes(_filePath);
+                string pidString = Helpers.ReadFileBytes(Helpers.ClientFilePath);
                 if (int.TryParse(pidString, out int processId))
                 {
-                    Console.WriteLine($"PID {processId} retrieved");
                     _clientConsoleProcess = Process.GetProcessById(processId);
-                    _clientConsoleHandle = _clientConsoleProcess.Handle;
-                    Console.WriteLine("Successfully acquired client console handle");
+                    Console.WriteLine($"PID {processId} retrieved");
                 }
                 else
                 {
-                    Console.WriteLine($"Error while parsing PID from {_fileName}");
+                    Console.WriteLine($"Error while parsing PID from {Helpers.ClientFileName}");
                 }
                 //File.Create(_filePath);
             }

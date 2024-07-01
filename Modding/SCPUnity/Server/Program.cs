@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 
 class Program
 {
-    private static string _binDirectory;
+    public static Utilities Utils = new();
     private static bool _gameStartedFirst = false;
     private static bool _gameRunning = false;
 
@@ -18,25 +19,33 @@ class Program
                 if (arg == "-gameStarted")
                 {
                     _gameStartedFirst = true;
-                    _binDirectory = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin";
                 }
             }
         }
 
-        if (string.IsNullOrEmpty(_binDirectory))
+        Server server;
+        bool started = false;
+
+        try
         {
-            _binDirectory = $@"{Directory.GetCurrentDirectory()}\bin";
+            server = new(IPAddress.Any, 10293);
+            started = server.Start();
+        }
+        catch (SocketException e)
+        {
+            Console.WriteLine("Server already started. Exiting...");
+            Thread.Sleep(1000);
+            return;
         }
 
-        WritePID();
 
-
-        Server server = new(IPAddress.Any, 10293);
-
-        if (server.Start())
+        if (started)
         {
+            WritePid();
+
             for (;;)
             {
+
                 string line = Console.ReadLine();
 
                 if (string.IsNullOrEmpty(line))
@@ -45,11 +54,22 @@ class Program
                 if (line == "/quit")
                     break;
 
+                if (line == "/list")
+                {
+                    string playerList = "";
+                    foreach (Server.Client client in server.ClientList)
+                    {
+                        playerList += $"{client.username}, ";
+                    }
+
+                    playerList = playerList.Remove(playerList.Length - 1);
+                    Console.WriteLine($"Connected clients: {playerList}");
+                }
+
                 foreach (Server.Client client in server.ClientList)
                 {
                     if(client.endpoint != server.Endpoint)
                         server.Send(client.endpoint, line);
-                    
                 }
             }
 
@@ -58,25 +78,17 @@ class Program
         }
     }
 
-    public static void WritePID()
+    public static void WritePid()
     {
-        string path = $@"{_binDirectory}\serverpid.txt";
+        if (!Directory.Exists(Utils.BinPath))
+            Directory.CreateDirectory(Utils.BinPath);
 
-        // if game opened first, directory is different
-        if (_gameStartedFirst)
+        if (File.Exists(Utils.ServerPidPath))
         {
-            path = $@"{_binDirectory}\serverpid.txt";
+            File.Delete(Utils.ServerPidPath);
         }
 
-        if (!Directory.Exists(_binDirectory))
-            Directory.CreateDirectory(_binDirectory);
-
-        if (File.Exists(path))
-        {
-            File.Delete(path);
-        }
-
-        File.Create(path).Close();
-        Utilities.WriteToFile(path, Process.GetCurrentProcess().Id);
+        File.Create(Utils.ServerPidPath).Close();
+        Utils.WriteToFile(Utils.ServerPidPath, Process.GetCurrentProcess().Id);
     }
 }

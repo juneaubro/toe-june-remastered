@@ -15,6 +15,7 @@ namespace SCMP.Patches
     [HarmonyPatch(typeof(MainMenu))]
     internal class MainMenuPatch
     {
+        #region PRIVATE FIELDS
         private static GameObject _multiplayerMenuObject = null;
         private static GameObject _buttonStack = null;
         private static GameObject _backgroundImage = null;
@@ -32,11 +33,9 @@ namespace SCMP.Patches
         private static bool _validatingPort = false;
         private static bool _validatingName = false;
         private static bool _isHost = false;
-        private static string _serverFileName = null;
-        private static string _serverTxtPath = null;
-        private static string _lobbyInfoFileName = null;
-        private static string _lobbyInfoTxtPath = null;
-
+        #endregion
+        
+        #region PUBLIC FIELDS
         public static Process ServerProcess = null;
         public static MainMenu _instance = null;
         public static GameObject MultiplayerButtonObject;
@@ -83,6 +82,9 @@ namespace SCMP.Patches
         public static GameObject HostScreenPlayerNameObject;
         public static GameObject HostGameScreenSeed;
         public static GameObject LobbyScreenNavigationButtons;
+        #endregion
+
+        private static Helpers helpers;
 
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
@@ -91,12 +93,13 @@ namespace SCMP.Patches
             if (_instance == null)
                 _instance = __instance;
 
+            helpers = new Helpers();
+
             if (!_buttonCreated)
             {
                 _buttonCreated = true;
                 Initialize();
             }
-
         }
 
         [HarmonyPatch("OnGameLoadBegin")]
@@ -132,18 +135,7 @@ namespace SCMP.Patches
             CreateMultiplayerButton();
             CreateMultiplayerMenu();
 
-            _serverFileName = "server.txt";
-            _lobbyInfoFileName = "lobbyinfo.txt";
-            if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
-            {
-                _serverTxtPath = $@"{Directory.GetCurrentDirectory()}\bin\{_serverFileName}";
-                _lobbyInfoTxtPath = $@"{Directory.GetCurrentDirectory()}\bin\{_lobbyInfoFileName}";
-            }
-            else
-            {
-                _serverTxtPath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\{_serverFileName}";
-                _lobbyInfoTxtPath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\{_lobbyInfoFileName}";
-            }
+
         }
 
         // Multiplayer button on Main Menu
@@ -657,24 +649,19 @@ namespace SCMP.Patches
 
 
             bool foundServer = false;
-            string serverFilePath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\Server.exe";
-            if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
+
+            string serverPid = "";
+            if (File.Exists(helpers.ServerPidPath))
             {
-                serverFilePath = $@"{Directory.GetCurrentDirectory()}\Server.exe";
+                Console.WriteLine($"Waiting for {helpers.ServerPidPath}");
+                Helpers.WaitForFile(helpers.ServerPidPath);
             }
 
-            string serverPidPath = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin\serverpid.txt";
-            if (new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP")
-            {
-                serverPidPath = $@"{Directory.GetCurrentDirectory()}\bin\serverpid.txt";
-            }
-
-            Console.WriteLine($"Waiting for {serverPidPath}");
-            Helpers.WaitForFile(serverPidPath);
-            string serverPid = Helpers.ReadFileBytes(serverPidPath);
             if (!string.IsNullOrEmpty(serverPid))
             {
+                serverPid = Helpers.ReadFileBytes(helpers.ServerPidPath);
                 int.TryParse(serverPid, out int pid);
+
                 try
                 {
                     ServerProcess = Process.GetProcessById(pid);
@@ -684,38 +671,32 @@ namespace SCMP.Patches
                 }
                 catch (ArgumentException e)
                 {
-                    Console.WriteLine("No server process found, starting one");
-                    ServerProcess = new Process();
-                    ServerProcess.StartInfo.FileName = serverFilePath;
-                    ServerProcess.StartInfo.UseShellExecute = true;
-                    ServerProcess.StartInfo.CreateNoWindow = true;
-                    ServerProcess.StartInfo.Arguments = "-gameStarted";
-
-                    if (ServerProcess.Start())
-                    {
-                        Console.WriteLine("Server successfully started");
-                    }
+                    StartNewServer();
                 }
             }
-
-            //if (!foundServer)
-            //{
-            //    Console.WriteLine("No server process found, starting one");
-            //    ServerProcess = new Process();
-            //    ServerProcess.StartInfo.FileName = serverFilePath;
-            //    ServerProcess.StartInfo.UseShellExecute = false;
-            //    ServerProcess.StartInfo.CreateNoWindow = true;
-            //    ServerProcess.StartInfo.Arguments = "-gameStarted";
-
-            //    if (ServerProcess.Start())
-            //    {
-            //        Console.WriteLine("Server successfully started");
-            //    }
-            //}
+            else
+            {
+                StartNewServer();
+            }
 
             // TODO: BEFORE LOADING LOBBY PLAYERS, NEED TO ADD ALREADY CONNECTED CLIENTS TO LOBBYPLAYERS FROM SERVER'S CLIENTLIST
             JoinHost();
             //LoadLobbyPlayers();
+        }
+
+        private static void StartNewServer()
+        {
+            Console.WriteLine($"No server process found, starting one at {helpers.ServerFilePath}");
+            ServerProcess = new Process();
+            ServerProcess.StartInfo.FileName = helpers.ServerFilePath;
+            ServerProcess.StartInfo.UseShellExecute = true;
+            ServerProcess.StartInfo.CreateNoWindow = true;
+            ServerProcess.StartInfo.Arguments = "-gameStarted";
+
+            if (ServerProcess.Start())
+            {
+                Console.WriteLine("Server successfully started");
+            }
         }
 
         private static void LoadLobbyPlayers()
@@ -730,7 +711,6 @@ namespace SCMP.Patches
             int spacing = 0;
             int padding = 4;
             int playerBoxHeight = 38;
-            string[] playerNames = new string[LobbyPlayers.Count];
 
             for(int i = 0; i < LobbyScreen.transform.childCount; i++)
             {
@@ -748,16 +728,7 @@ namespace SCMP.Patches
                 p.transform.SetParent(LobbyScreen.transform);
                 p.transform.position = _backgroundImage.transform.position;
                 p.transform.localPosition = new Vector3(666f, (825f - (playerBoxHeight * spacing)) + padding, 0f);
-
-                playerNames[spacing] = p.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text;
-
                 spacing++;
-            }
-
-            if (_isHost)
-            {
-                Console.WriteLine($"Writing to file : {_lobbyInfoTxtPath}");
-                Helpers.WriteToFile(_lobbyInfoTxtPath, playerNames);
             }
         }
 
@@ -789,18 +760,20 @@ namespace SCMP.Patches
             {
                 username = HostScreenPlayerNameInputFieldText.text;
             }
-            
-            Console.WriteLine($"username : {username}");
-            //Helpers.WriteToFile(_serverTxtPath, [IpInputField.text, PortInputField.text, NameInputField.text]);
-            Helpers.WriteToFile(_serverTxtPath, [ip, port, username]);
-            Debug.Log($"Getting lobby info...");
-                
-            // TODO: NEED TO CHANGE THIS TO HAVE SERVER.CS WRITE LOBBY INFO WHENEVER SOMEONE NEW ACKNOWLEDGES
+
+            //if (!_isHost)
+            //    Helpers.WaitForFile(helpers.ServerTxtFilePath, FileAccess.Write);
+
+            Helpers.WriteToFile(helpers.ServerTxtFilePath, [ip, port, username]);
+
+            Debug.Log($"Waiting for lobby info...");
+
             if (!_isHost)
             {
-                Helpers.WaitForFile(_lobbyInfoTxtPath, FileAccess.Read, FileShare.None, 2000);
-                string playerNames = Helpers.ReadFileBytes(_lobbyInfoTxtPath);
-                foreach (string name in playerNames.Split(','))
+                Helpers.WaitForFile(helpers.LobbyInfoFilePath, FileAccess.Read, FileShare.Write);
+                string playerNameString = Helpers.ReadFileBytes(helpers.LobbyInfoFilePath);
+
+                foreach (string name in playerNameString.Split(','))
                 {
                     GameObject newPlayer =
                         Object.Instantiate(HostGameScreenNavigationButtons.transform.GetChild(0).gameObject);
@@ -808,10 +781,29 @@ namespace SCMP.Patches
                     newPlayer.GetComponent<Button>().onClick.RemoveAllListeners();
                     newPlayer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = name;
                     LobbyPlayers.Add(newPlayer);
+                }
 
-                    Debug.Log(name);
+                if (File.Exists(helpers.ServerTxtFilePath))
+                {
+                    File.Delete(helpers.ServerTxtFilePath);
+                    File.Create(helpers.ServerTxtFilePath).Close();
                 }
             }
+            else
+            {
+                int iter = 0;
+                string[] playerNames = new string[LobbyPlayers.Count];
+
+                foreach (GameObject go in LobbyPlayers)
+                {
+                    playerNames[iter] = go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
+                    iter++;
+                }
+
+                Console.WriteLine($"Writing [{playerNames}] to file : {helpers.LobbyInfoFilePath}");
+                Helpers.WriteToFile(helpers.LobbyInfoFilePath, playerNames);
+            }
+
 
             LoadLobbyPlayers();
         }

@@ -1,6 +1,81 @@
 ﻿public class Utilities
 {
-    public static void WriteToFile(string filePath, string value)
+
+    #region READONLY FIELDS
+    private readonly string CurrentDirectory;
+    private readonly string CurrentFolder;
+
+    public readonly string GameFileName;
+    public readonly string GameFilePath;
+    public readonly string GamePidName;
+    public readonly string GamePidPath;
+
+    public readonly string BinPath;
+
+    public readonly string LobbyInfoFileName;
+    public readonly string LobbyInfoFilePath;
+
+    public readonly string ServerFileName;
+    public readonly string ServerPidName;
+    public readonly string ServerTxtFileName;
+    public readonly string ServerPidPath;
+    public readonly string ServerFilePath;
+    public readonly string ServerTxtFilePath;
+
+    public readonly string ClientFileName;
+    public readonly string ClientPidName;
+    public readonly string ClientPidPath;
+    public readonly string ClientFilePath;
+    #endregion
+
+    public Utilities()
+    {
+        CurrentDirectory = Directory.GetCurrentDirectory();
+        CurrentFolder =
+            CurrentDirectory.Substring(CurrentDirectory.LastIndexOf('\\') + 1);
+
+        BinPath = CurrentFolder == "SCMP"
+            ? $@"{CurrentDirectory}\bin\"
+            : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\";
+
+        GameFileName = "SCP Unity.exe";
+        GamePidName = "gamepid.txt";
+        GameFilePath = CurrentFolder == "SCMP" 
+            ? $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\{GameFileName}"
+            : $@"{CurrentDirectory}\{GameFileName}";
+        GamePidPath = CurrentFolder == "SCMP"
+            ? $@"{CurrentDirectory}\bin\{GamePidName}"
+            : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{GamePidName}";
+
+        LobbyInfoFileName = "lobbyinfo.txt";
+        LobbyInfoFilePath = CurrentFolder == "SCMP"
+            ? $@"{CurrentDirectory}\bin\{LobbyInfoFileName}"
+            : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{LobbyInfoFileName}";
+
+        ServerFileName = "Server.exe";
+        ServerPidName = "serverpid.txt";
+        ServerTxtFileName = "server.txt";
+        ServerPidPath = CurrentFolder == "SCMP"
+            ? $@"{CurrentDirectory}\bin\{ServerPidName}"
+            : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{ServerPidName}";
+        ServerFilePath = CurrentFolder == "SCMP"
+            ? $@"{CurrentDirectory}\{ServerFileName}"
+            : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\{ServerFileName}";
+        ServerTxtFilePath = CurrentFolder == "SCMP"
+            ? $@"{CurrentDirectory}\bin\{ServerTxtFileName}"
+            : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{ServerTxtFileName}";
+
+        ClientFileName = "Client.exe";
+        ClientPidName = "pid.txt";
+        ClientPidPath = CurrentFolder == "SCMP"
+            ? $@"{CurrentDirectory}\bin\{ClientPidName}"
+            : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\bin\{ClientPidName}";
+        ClientFilePath = CurrentFolder == "SCMP"
+            ? $@"{CurrentDirectory}\{ClientFileName}"
+            : $@"{CurrentDirectory}\BepInEx\plugins\SCMP\{ClientFileName}";
+}
+
+    public void WriteToFile(string filePath, string value, char delimiter = default)
     {
         if (!File.Exists(filePath))
         {
@@ -14,6 +89,8 @@
             Console.WriteLine($"Attempting to write to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
             using (StreamWriter writer = new StreamWriter(filePath))
             {
+                if (delimiter != default)
+                    value += delimiter;
                 writer.WriteLine(value);
                 writer.Close();
             }
@@ -26,9 +103,9 @@
         Console.WriteLine($"Finished writing to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
     }
 
-    public static void WriteToFile(string filePath, int value )
+    public void WriteToFile(string filePath, int value, char delimiter = default)
     {
-        WriteToFile(filePath, value.ToString());
+        WriteToFile(filePath, value.ToString(), delimiter);
     }
 
     /// <summary>
@@ -36,9 +113,12 @@
     /// </summary>
     /// <param name="filePath">File path to attempt to open</param>
     /// <returns>All bytes read as a <see cref="string"/> or <see langword="null"/></returns>
-    public static string ReadFileBytes(string filePath)
+    public string ReadFileBytes(string filePath, bool printRead = false)
     {
         byte[] buffer = null;
+
+        if(printRead)
+            Console.WriteLine($"Reading file: {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
 
         try
         {
@@ -67,7 +147,7 @@
         return null;
     }
 
-    public static string ReadFile(string filePath)
+    public string ReadFile(string filePath)
     {
         string value = "";
         using (StreamReader file = new StreamReader(filePath))
@@ -86,21 +166,30 @@
     /// Check if <see cref="File"/> is ready by attempting to open file
     /// </summary>
     /// <param name="filePath">Path to <see cref="File"/> to check</param>
+    /// <param name="shouldCreateFile">If <see cref="File"/> should be created if not found</param>
     /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
     /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
     /// <returns><see langword="true"/> if <see cref="File"/> can opened and has bytes to read, <see langword="false"/> otherwise</returns>
-    public static bool IsFileReady(string filePath = null, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None)
+    public bool IsFileReady(string filePath = "", bool shouldCreateFile = true, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None)
     {
-        if (!File.Exists(filePath))
+        if (!File.Exists(filePath) && shouldCreateFile)
         {
-            File.Create(filePath);
-            return false;
+            File.Create(filePath).Close();
+            //return false;
         }
 
         try
         {
             using (FileStream inputStream = File.Open(filePath, FileMode.Open, fileAccess, fileShare))
+            {
+                if (fileAccess == FileAccess.Write)
+                {
+                    inputStream.Close();
+                    return true;
+                }
+
                 return inputStream.Length > 0;
+            }
         }
         catch (Exception)
         {
@@ -112,12 +201,12 @@
     /// Wait for file to be available
     /// </summary>
     /// <param name="filePath">Path to <see cref="File"/> to wait for</param>
-    /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
+    /// <param name="shouldCreateFile">If <see cref="File"/> should be created if not found</param>    /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
     /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
     /// <param name="milliseconds">Time in milliseconds for <see cref="Thread"/> to sleep before checking <see cref="File"/> again</param>
-    public static void WaitForFile(string filePath, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
+    public void WaitForFile(string filePath, bool shouldCreateFile = true, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
     {
-        while (!IsFileReady(filePath, fileAccess, fileShare))
+        while (!IsFileReady(filePath, shouldCreateFile, fileAccess, fileShare))
         {
             Thread.Sleep(milliseconds);
         }
@@ -127,13 +216,13 @@
     /// Wait for file to be available
     /// </summary>
     /// <param name="filePath">Path to <see cref="File"/> to wait for</param>
-    /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
+    /// <param name="shouldCreateFile">If <see cref="File"/> should be created if not found</param>    /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
     /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
     /// <param name="milliseconds">Time in milliseconds for <see cref="Thread"/> to sleep before checking <see cref="File"/> again</param>
     /// <param name="end"><see langword="bool"/> to check if false each iteration</param>
-    public static void WaitForFile(string filePath, ref bool end, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
+    public void WaitForFile(string filePath, ref bool end, bool shouldCreateFile = true, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
     {
-        while (!IsFileReady(filePath, fileAccess, fileShare) && !end)
+        while (!IsFileReady(filePath, shouldCreateFile, fileAccess, fileShare) && !end)
         {
             Thread.Sleep(milliseconds);
         }
@@ -142,7 +231,7 @@
     /// <summary>
     /// Clears [root game folder]/Logs/ folder
     /// </summary>
-    public static void ClearLogFiles()
+    public void ClearLogFiles()
     {
         string logDirectory = Directory.GetCurrentDirectory() + @"\Logs\";
         if (Directory.Exists(logDirectory))
@@ -154,12 +243,12 @@
     /// </summary>
     /// <param name="input">Input <see cref="string"/></param>
     /// <returns>Last <see langword="char"/> in <see cref="string"/></returns>
-    public static char GetLastCharacter(string input)
+    public char GetLastCharacter(string input)
     {
         return string.IsNullOrEmpty(input) ? '\0' : input[^1];
     }
 
-    public static bool WriteToFile(string filePath, params string[] values)
+    public bool WriteToFile(string filePath, params string[] values)
     {
         if (!File.Exists(filePath))
         {
@@ -189,5 +278,13 @@
 
         Console.WriteLine($"Finished writing to {filePath.Substring(filePath.LastIndexOf('\\') + 1)}");
         return true;
+    }
+
+    public void RemakeBinIfExists()
+    {
+        if (Directory.Exists(BinPath))
+            Directory.Delete(BinPath, true);
+
+        Directory.CreateDirectory(BinPath);
     }
 }

@@ -1,21 +1,29 @@
-﻿//#define CUSTOM_SERVER_SEND
-
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 
 class Program
 {
+    public static Utilities Utils;
     private static string _address;
     private static int _port;
     private static string _username;
-    private static string _binDirectory;
     private static bool _gameStartedFirst = false;
     private static bool _gameRunning = false;
     private static bool _quitBeforeServerInfo = false;
+    private static bool _clientAlreadyExists = false;
     private static Process _gameProcess;
     private static IntPtr _gameHandle;
+    private static int _previousServerPid = 0;
+    private static string _previousLobbyInfo;
+    private static Process[] _processes;
 
     static void Main(string[] args)
     {
+        _processes = Process.GetProcesses();
+        Utils = new Utilities();
+
         Console.Title = "SCMP Client";
         Console.CursorVisible = false;
 
@@ -25,18 +33,71 @@ class Program
             {
                 if (arg == "-gameStarted")
                 {
-                    _binDirectory = $@"{Directory.GetCurrentDirectory()}\BepInEx\plugins\SCMP\bin";
                     _gameStartedFirst = true;
                 }
             }
         }
 
-        if (string.IsNullOrEmpty(_binDirectory))
+        if(File.Exists(Utils.LobbyInfoFilePath))
+            _previousLobbyInfo = Utils.ReadFileBytes(Utils.LobbyInfoFilePath);
+
+        List<int> previousPids = new List<int>();
+
+        if (!File.Exists(Utils.GamePidPath))
         {
-            _binDirectory = $@"{Directory.GetCurrentDirectory()}\bin";
+            Console.WriteLine($"{Utils.GamePidPath} does not exist, creating it");
+            File.Create(Utils.GamePidPath).Close();
+        }
+        else
+        {
+            foreach (string pid in Utils.ReadFileBytes(Utils.GamePidPath, true).Split(','))
+            {
+                string temp = pid;
+                while (temp.Contains(','))
+                    temp = temp.Remove(temp.LastIndexOf(','));
+
+                int.TryParse(temp, out int intPid);
+                if(intPid != default)
+                    previousPids.Add(intPid); 
+                Console.WriteLine(pid);
+            }
+
         }
 
-        WritePID();
+        if (!_gameStartedFirst)
+        {
+            Utils.WriteToFile(Utils.GamePidPath, Process.GetCurrentProcess().Id, ',');
+        }
+
+        if (File.Exists(Utils.ServerPidPath))
+        {
+            int.TryParse(Utils.ReadFileBytes(Utils.ServerPidPath, true), out _previousServerPid);
+        }
+
+        // point of yeeting, cache previous info before this yeets it into oblivion
+        Utils.RemakeBinIfExists();
+
+        Utils.WriteToFile(Utils.ServerPidPath, _previousServerPid);
+        if(File.Exists(Utils.LobbyInfoFilePath))
+            Utils.WriteToFile(Utils.LobbyInfoFilePath, _previousLobbyInfo);
+
+        //foreach (Process process in _processes)
+        //{
+        //    try
+        //    {
+        //        if (process.MainWindowTitle == "SCMP Client" && process.Id != Process.GetCurrentProcess().Id)
+        //        {
+        //            _clientAlreadyExists = true;
+        //            break;
+        //        }
+        //    }
+        //    catch (InvalidOperationException e)
+        //    {
+        //        continue;
+        //    }
+        //}
+
+        WritePid();
 
         if (!_gameStartedFirst)
         {
@@ -49,12 +110,20 @@ class Program
 
             foreach (Process process in processes)
             {
-                Console.WriteLine("Found game process");
-                _gameProcess = process;
-                _gameHandle = process.Handle;
-            }
+                if (!previousPids.Contains(process.Id))
+                {
+                    Console.WriteLine("Found game process");
+                    _gameProcess = process;
+                    _gameHandle = process.Handle;
+                    Utils.WaitForFile(Utils.GamePidPath, true, FileAccess.Write);
+                    Utils.WriteToFile(Utils.GamePidPath, process.Id, ',');
+                    break;
+                }
 
+                previousPids.Add(process.Id);
+            }
         }
+
 
         _gameRunning = true;
         new Thread(() =>
@@ -75,10 +144,7 @@ class Program
         if (_quitBeforeServerInfo)
             return;
 
-
         Client client = new Client(_address, _port, _username, _gameRunning);
-
-        //WaitForLobbyInfo();
 
         if (client.StartupError)
         {
@@ -103,21 +169,6 @@ class Program
                     break;
                 }
 
-                // if defined, this process will not close by itself due to ReadLine not being interuptable
-#if CUSTOM_SERVER_SEND
-                line = Console.ReadLine();
-                
-                if (string.IsNullOrEmpty(line))
-                    continue;
-                
-                if (line == "/quit")
-                {
-                    Console.WriteLine("Stopping client");
-                    break;
-                }
-                
-                client.Send(client.Endpoint, line);
-#endif
                 Thread.Sleep(1000);
             }
         }
@@ -127,16 +178,17 @@ class Program
     {
         // Game might have started first, if so,
         // current directory is already the game folder
-        string gamePath = "";
-        gamePath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe"
-            : $@"{Directory.GetCurrentDirectory()}\SCP Unity.exe";
+        //string gamePath = "";
+        //gamePath = new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SCMP" ? $@"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName}\SCP Unity.exe"
+        //    : $@"{Directory.GetCurrentDirectory()}\SCP Unity.exe";
 
-        if (File.Exists(gamePath))
+        if (File.Exists(Utils.GameFilePath))
         {
             Console.WriteLine("Found game exe, starting process");
             _gameProcess = new Process();
             _gameProcess.StartInfo.UseShellExecute = false;
-            _gameProcess.StartInfo.FileName = gamePath;
+            _gameProcess.StartInfo.FileName = Utils.GameFilePath;
+            _gameProcess.StartInfo.Arguments = "-gameLinked";
 
             if (_gameProcess.Start())
             {
@@ -147,22 +199,34 @@ class Program
 
     public static bool WaitForLobby()
     {
-        string path = $@"{_binDirectory}\server.txt";
+        if (!Directory.Exists(Utils.BinPath))
+            Directory.CreateDirectory(Utils.BinPath);
 
-        if (!Directory.Exists(_binDirectory))
-            Directory.CreateDirectory(_binDirectory);
+        Console.WriteLine($"_clientAlreadyExists : {_clientAlreadyExists}");
 
-        if (File.Exists(path))
-            File.Delete(path);
-
-        File.Create(path).Close();
+        //if (_previousServerPid != 0 && _clientAlreadyExists)
+        //{
+        //    if (File.Exists(Utils.ServerTxtFilePath))
+        //        File.Delete(Utils.ServerTxtFilePath);
+            
+        //    File.Create(Utils.ServerTxtFilePath).Close();
+        //    Console.WriteLine(_previousServerPid);
+        //    Utils.WriteToFile(Utils.ServerTxtFilePath, _previousServerPid);
+        //}
         
         Console.WriteLine($"Waiting for server info...");
-        Utilities.WaitForFile(path, ref _quitBeforeServerInfo);
+
+        //if (File.Exists(Utils.ServerTxtFilePath) && _clientAlreadyExists)
+        //{
+        //    File.Delete(Utils.ServerTxtFilePath);
+        //    File.Create(Utils.ServerTxtFilePath);
+        //}
+        Utils.WaitForFile(Utils.ServerTxtFilePath, ref _quitBeforeServerInfo, false, FileAccess.Read, FileShare.Write);
 
         if (!_quitBeforeServerInfo)
         {
-            string temp = Utilities.ReadFileBytes(path);
+            string temp = Utils.ReadFileBytes(Utils.ServerTxtFilePath, true);
+            Console.WriteLine(temp);
             string[] serverInfo = temp.Split(',');
             _address = serverInfo[0];
             int.TryParse(serverInfo[1], out _port);
@@ -177,57 +241,23 @@ class Program
         return !_quitBeforeServerInfo;
     }
 
-    //public static bool WaitForLobbyInfo()
-    //{
-    //    string path = $@"{_binDirectory}\lobbyinfo.txt";
-
-    //    if (!Directory.Exists(_binDirectory))
-    //        Directory.CreateDirectory(_binDirectory);
-
-    //    if (File.Exists(path))
-    //        File.Delete(path);
-
-    //    File.Create(path).Close();
-    //    Utilities.WaitForFile(path, ref _quitBeforeServerInfo);
-
-    //    if (!_quitBeforeServerInfo)
-    //    {
-    //        string temp = Utilities.ReadFileBytes(path);
-    //        string[] serverInfo = temp.Split(',');
-    //        _address = serverInfo[0];
-    //        int.TryParse(serverInfo[1], out _port);
-    //        _username = serverInfo[2];
-    //    }
-    //    else
-    //    {
-    //        Console.WriteLine("Game process exited before retrieving server info, exiting...");
-    //        Thread.Sleep(1000);
-    //    }
-
-    //    return !_quitBeforeServerInfo;
-    //}
-
-    public static void WritePID()
+    public static void WritePid()
     {
-        string path = $@"{_binDirectory}\pid.txt";
+        if (!Directory.Exists(Utils.BinPath))
+            Directory.CreateDirectory(Utils.BinPath);
 
-        // if game opened first, directory is different
-        if (_gameStartedFirst)
+        if (File.Exists(Utils.ClientPidPath))
         {
-            path = $@"{_binDirectory}\pid.txt";
+            File.Delete(Utils.ClientPidPath);
         }
 
-        if (!Directory.Exists(_binDirectory))
-            Directory.CreateDirectory(_binDirectory);
+        File.Create(Utils.ClientPidPath).Close();
+        Utils.WriteToFile(Utils.ClientPidPath, Process.GetCurrentProcess().Id);
 
-        if (File.Exists(path))
+        // REWRITE GAME PID
+        if (!_gameStartedFirst)
         {
-            File.Delete(path);
+            Utils.WriteToFile(Utils.GamePidPath, Process.GetCurrentProcess().Id, ',');
         }
-
-        File.Create(path).Close();
-        Utilities.WriteToFile(path, Process.GetCurrentProcess().Id);
     }
-
-    
 }
