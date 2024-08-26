@@ -1,6 +1,7 @@
 ﻿using BepInEx.Logging;
 using BepInEx;
 using HarmonyLib;
+using RandomMods.Patches;
 
 namespace RandomMods
 {
@@ -25,11 +26,13 @@ namespace RandomMods
             }
 
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
-            mls.LogInfo($"{modGUID} started loading.");
+            mls.LogInfo($"Loading {modGUID}");
 
             // Base
             harmony.PatchAll(typeof(Plugin));
 
+            // Acrid
+            harmony.PatchAll(typeof(AcridPoison));
 
         }
     }
