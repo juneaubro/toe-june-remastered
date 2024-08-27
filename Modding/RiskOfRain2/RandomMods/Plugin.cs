@@ -34,6 +34,8 @@ namespace RandomMods
             // Acrid
             harmony.PatchAll(typeof(AcridPoison));
 
+            // Network
+            harmony.PatchAll(typeof(ForceHost));
         }
     }
 }

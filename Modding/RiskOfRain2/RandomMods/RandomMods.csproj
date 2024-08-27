@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches\AcridPoison.cs" />
+    <Compile Include="Patches\DontDoIt.cs" />
     <Compile Include="Patches\ForceHost.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
