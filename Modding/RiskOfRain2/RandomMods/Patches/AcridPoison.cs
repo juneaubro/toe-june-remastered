@@ -15,8 +15,8 @@ namespace RandomMods.Patches
     internal class AcridPoison
     {
         public static bool dotStarted = false;
-        static float cd = 0f;
-        static float dmg = 1f;
+        //static float cd = 0f;
+        static float dmg = 30f;
 
         [HarmonyPrefix]
         [HarmonyPatch("Awake")]
@@ -46,18 +46,18 @@ namespace RandomMods.Patches
         {
             ___dotDefs[4].damageCoefficient = dmg;
 
-            if (cd > 5)
-            {
-                Debug.Log($"ForceHost.hostStatus: {ForceHost.hostStatus}");
-                Debug.Log($"NetworkServer.active: {NetworkServer.active}");
-                //Debug.Log($"ForceHost.activeStatus: {ForceHost.activeStatus}");
-                cd = 0;
-            }
-            else
-            {
-                cd += UnityEngine.Time.deltaTime;
-            }
-            // DotController.DotStack dotStack1 = DotController.dotStackPool.Request();
+            //if (cd > 5)
+            //{
+            //    Debug.Log($"ForceHost.hostStatus: {ForceHost.hostStatus}");
+            //    Debug.Log($"NetworkServer.active: {NetworkServer.active}");
+            //    //Debug.Log($"ForceHost.activeStatus: {ForceHost.activeStatus}");
+            //    cd = 0;
+            //}
+            //else
+            //{
+            //    cd += UnityEngine.Time.deltaTime;
+            //}
+            //// DotController.DotStack dotStack1 = DotController.dotStackPool.Request();
         }
     }
 }

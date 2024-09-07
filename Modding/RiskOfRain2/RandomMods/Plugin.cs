@@ -34,8 +34,11 @@ namespace RandomMods
             // Acrid
             harmony.PatchAll(typeof(AcridPoison));
 
+            // Heretic
+            harmony.PatchAll(typeof(HereticModCBChanges));
+
             // Network
-            harmony.PatchAll(typeof(ForceHost));
+            // harmony.PatchAll(typeof(ForceHost));
         }
     }
 }
