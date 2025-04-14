@@ -2,6 +2,7 @@
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
+using PileOMods.Patches;
 
 namespace PileOMods
 {
@@ -30,6 +31,12 @@ namespace PileOMods
 
             // Base
             harmony.PatchAll(typeof(PileOModsBase));
+
+            // Player
+            harmony.PatchAll(typeof(GodMode));
+            harmony.PatchAll(typeof(KYS));
+            harmony.PatchAll(typeof(GrabDistance));
+            harmony.PatchAll(typeof(SpawnTP));
         }
     }
 }
