@@ -126,6 +126,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="E:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\NightVision.dll" ( copy /Y "$(TargetPath)" "C:\Users\juneau\AppData\Roaming\r2modmanPlus-local\LethalCompany\profiles\de\BepInEx\plugins\Unknown-NightVision325325\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "C:\Users\tonyg\AppData\Roaming\r2modmanPlus-local\LethalCompany\profiles\main\BepInEx\plugins\NightVision\$(TargetFileName)")</PostBuildEvent>
+    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="C:\github\toe-june-remastered\Modding\LethalCompany\NightVision\NightVision\bin\Debug\NightVision.dll" ( copy /Y "$(TargetPath)" "C:\Users\juneau\AppData\Roaming\r2modmanPlus-local\LethalCompany\profiles\de\BepInEx\plugins\Unknown-NightVision325325\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "C:\Users\tonyg\AppData\Roaming\r2modmanPlus-local\LethalCompany\profiles\main\BepInEx\plugins\NightVision\$(TargetFileName)")</PostBuildEvent>
   </PropertyGroup>
 </Project>
