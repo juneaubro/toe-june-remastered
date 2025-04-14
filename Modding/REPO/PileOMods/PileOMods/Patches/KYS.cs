@@ -13,18 +13,18 @@ namespace PileOMods.Patches
         static void Update(PlayerHealth __instance)
         {
             scuiKey.Update();
+            int maxHealth = (int)Traverse.Create(__instance).Field("maxHealth").GetValue();
             if (scui)
             {
-                int maxHealth=(int)Traverse.Create(__instance).Field("maxHealth").GetValue();
-                Traverse.Create(__instance).Method("Hurt",maxHealth,true);
+                __instance.HurtOther(maxHealth, __instance.transform.position, false);
                 scui = false;
             }
         }
 
         public static void enableKYS()
         {
-            scui = true;
             GodMode.isGodMode = false;
+            scui = true;
             Debug.Log("KYS-ing");
         }
     }
