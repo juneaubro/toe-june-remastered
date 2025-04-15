@@ -12,6 +12,7 @@ namespace PileOMods.Patches
         public static bool isGodMode = false;
         public static bool fullHPMode = false;
         public static bool oneHPMode = false;
+        public static int maxHealth;
 
         [HarmonyPatch(typeof(PlayerHealth), "Update")]
         [HarmonyPrefix]
@@ -20,7 +21,7 @@ namespace PileOMods.Patches
             godKey.Update();
             fullHPKey.Update();
             oneHPKey.Update();
-            int maxHealth = (int)Traverse.Create(__instance).Field("maxHealth").GetValue();
+            maxHealth = (int)Traverse.Create(__instance).Field("maxHealth").GetValue();
             if (isGodMode)
                 Traverse.Create(__instance).Field("godMode").SetValue(true);
             else
@@ -53,14 +54,14 @@ namespace PileOMods.Patches
 
         public static void oneHP()
         {
-            fullHPMode = !fullHPMode;
-            Debug.Log($"Gave full HP.");
+            oneHPMode = !oneHPMode;
+            Debug.Log($"Gave 1 HP.");
         }
 
         public static void fullHP()
         {
-            oneHPMode = !oneHPMode;
-            Debug.Log($"Gave 1 HP.");
+            fullHPMode = !fullHPMode;
+            Debug.Log($"Gave {maxHealth} HP.");
         }
     }
 }
