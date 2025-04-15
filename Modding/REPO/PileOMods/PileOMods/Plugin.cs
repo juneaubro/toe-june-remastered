@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
 using PileOMods.Patches;
@@ -37,6 +36,12 @@ namespace PileOMods
             harmony.PatchAll(typeof(KYS));
             harmony.PatchAll(typeof(GrabDistance));
             harmony.PatchAll(typeof(SpawnTP));
+
+            // Gun
+            harmony.PatchAll(typeof(BoomDead));
+
+            // Global Vars
+            harmony.PatchAll(typeof(PlayerAvatarVars));
         }
     }
 }

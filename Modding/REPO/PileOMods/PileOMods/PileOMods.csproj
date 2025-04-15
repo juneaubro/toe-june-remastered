@@ -41,6 +41,7 @@
     <Reference Include="BepInEx">
       <HintPath>C:\Users\juneau\AppData\Roaming\r2modmanPlus-local\REPO\profiles\de\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="PhotonUnityNetworking, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -58,8 +59,14 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\..\SteamLibrary\steamapps\common\REPO\REPO_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\SteamLibrary\steamapps\common\REPO\REPO_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Patches\BoomDead.cs" />
+    <Compile Include="PlayerAvatarVars.cs" />
     <Compile Include="ModHotkey.cs" />
     <Compile Include="Patches\GodMode.cs" />
     <Compile Include="Patches\GrabDistance.cs" />

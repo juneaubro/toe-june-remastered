@@ -79,7 +79,6 @@ Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\obj\Debug\PileOMo
 Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\Unity.InputSystem.dll
 Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\UnityEngine.UI.dll
 Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\Assembly-CSharp.dll
-Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\PhotonUnityNetworking.dll
 Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\Unity.TextMeshPro.dll
 Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\Klattersynth.dll
 Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\Unity.AI.Navigation.dll
