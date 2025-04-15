@@ -1,28 +1,22 @@
 ﻿using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace PileOMods.Patches
 {
-    [HarmonyPatch(typeof(PlayerAvatar))]
+    [HarmonyPatch(typeof(PlayerController))]
     internal class SpawnTP
     {
-        public static ModHotkey homeTPKey = new ModHotkey(MouseAndKeyboard.Home, homeTP);
+        public static ModHotkey homeTPKey = new ModHotkey(MouseAndKeyboard.Home, homeTP, true);
         public static bool TPHome = false;
 
-        [HarmonyPatch(typeof(PlayerAvatar), "FixedUpdate")]
+        [HarmonyPatch(typeof(PlayerController), "Update")]
         [HarmonyPostfix]
-        static void FixedUpdate(PlayerAvatar __instance)
+        static void Update(PlayerController __instance)
         {
             homeTPKey.Update();
             if(TPHome)
             {
-                Vector3 spawnPos = (Vector3)Traverse.Create(__instance).Field("spawnPosition").GetValue();
-                Traverse.Create(__instance).Field("rb").Method("MovePosition", spawnPos);
+                __instance.transform.position = PlayerAvatarVars.spawnPos;
                 TPHome=false;
             }
         }
