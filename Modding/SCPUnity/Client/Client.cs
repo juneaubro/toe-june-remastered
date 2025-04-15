@@ -108,9 +108,9 @@ internal class Client : UdpClient
         //}
 
         // Wait for server to spin up
-        Utils.WaitForFile(Utils.ServerPidPath, false, FileAccess.ReadWrite, FileShare.Write, 3000);
+        Utils.WaitForFile(Utils.ServerPidPath, false, FileAccess.ReadWrite, FileShare.Write);
         Thread.Sleep(1000);
-        Console.WriteLine($"Server process id : {Utils.ReadFileBytes(Utils.ServerPidPath)}");
+        //Console.WriteLine($"Server process id : {Utils.ReadFileBytes(Utils.ServerPidPath)}");
 
         if (Send(EventType.Acknowledge) > 0)
         {
@@ -201,9 +201,7 @@ internal class Client : UdpClient
 
                         int.TryParse(playerNumberString, out var numberOfPlayers);
 
-                        // update lobby
                         _playerNames = new string[numberOfPlayers];
-
                         _playerNames = message.Substring(message.IndexOf('\0') + 1).Split(',');
 
                         Utils.WaitForFile(Utils.LobbyInfoFilePath, false, FileAccess.Write, FileShare.ReadWrite);

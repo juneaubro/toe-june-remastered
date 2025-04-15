@@ -50,7 +50,7 @@ class Program
         }
         else
         {
-            foreach (string pid in Utils.ReadFileBytes(Utils.GamePidPath, true).Split(','))
+            foreach (string pid in Utils.ReadFileBytes(Utils.GamePidPath, false).Split(','))
             {
                 string temp = pid;
                 while (temp.Contains(','))
@@ -71,7 +71,7 @@ class Program
 
         if (File.Exists(Utils.ServerPidPath))
         {
-            int.TryParse(Utils.ReadFileBytes(Utils.ServerPidPath, true), out _previousServerPid);
+            int.TryParse(Utils.ReadFileBytes(Utils.ServerPidPath, false), out _previousServerPid);
         }
 
         // point of yeeting, cache previous info before this yeets it into oblivion
@@ -115,7 +115,7 @@ class Program
                     Console.WriteLine("Found game process");
                     _gameProcess = process;
                     _gameHandle = process.Handle;
-                    Utils.WaitForFile(Utils.GamePidPath, true, FileAccess.Write);
+                    Utils.WaitForFile(Utils.GamePidPath, false, FileAccess.Write);
                     Utils.WriteToFile(Utils.GamePidPath, process.Id, ',');
                     break;
                 }
@@ -202,8 +202,6 @@ class Program
         if (!Directory.Exists(Utils.BinPath))
             Directory.CreateDirectory(Utils.BinPath);
 
-        Console.WriteLine($"_clientAlreadyExists : {_clientAlreadyExists}");
-
         //if (_previousServerPid != 0 && _clientAlreadyExists)
         //{
         //    if (File.Exists(Utils.ServerTxtFilePath))
@@ -225,7 +223,7 @@ class Program
 
         if (!_quitBeforeServerInfo)
         {
-            string temp = Utils.ReadFileBytes(Utils.ServerTxtFilePath, true);
+            string temp = Utils.ReadFileBytes(Utils.ServerTxtFilePath, false);
             Console.WriteLine(temp);
             string[] serverInfo = temp.Split(',');
             _address = serverInfo[0];

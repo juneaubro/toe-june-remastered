@@ -87,7 +87,7 @@ namespace SCMP
         /// Recursively prints all children and components attached to the gameObject, optionally printing to a log file
         /// </summary>
         [MethodImpl(MethodImplOptions.NoInlining)] // Force no inlining for stack walking in Print()
-        public static void PrintGameObjectInfo(GameObject gameObject, bool printToLog = true)
+        public void PrintGameObjectInfo(GameObject gameObject, bool printToLog = true)
         {
             string tabs = "";
 
@@ -138,7 +138,7 @@ namespace SCMP
         /// and a seperate text file for each method name that uses the Print() method
         /// If txt file is given the wrong name, try decorating the method with [MethodImpl(MethodImplOptions.NoInlining)]
         /// </summary>
-        public static void Print(string stringToPrint, bool logToOutputFile = false, LogType logType = LogType.Log,
+        public void Print(string stringToPrint, bool logToOutputFile = false, LogType logType = LogType.Log,
             LogOption logOption = LogOption.None, params object[] args)
         {
             Debug.LogFormat(logType, logOption, null, stringToPrint, args);
@@ -180,7 +180,7 @@ namespace SCMP
         /// <summary>
         /// Clears [root game folder]/Logs/ folder
         /// </summary>
-        public static void ClearLogFiles()
+        public void ClearLogFiles()
         {
             string logDirectory = Directory.GetCurrentDirectory() + @"\Logs\";
             if (Directory.Exists(logDirectory))
@@ -195,7 +195,7 @@ namespace SCMP
         /// <param name="original">Original component to copy</param>
         /// <param name="destination">Destination GameObject to copy component to</param>
         /// <returns>Copied component</returns>
-        public static T CopyComponent<T>(T original, ref GameObject destination) where T : Component
+        public T CopyComponent<T>(T original, ref GameObject destination) where T : Component
         {
             var type = original.GetType();
             var fields = type.GetFields();
@@ -218,7 +218,7 @@ namespace SCMP
         /// </summary>
         /// <param name="input">Input <see cref="string"/></param>
         /// <returns>Last <see langword="char"/> in <see cref="string"/></returns>
-        public static char GetLastCharacter(string input)
+        public char GetLastCharacter(string input)
         {
             return string.IsNullOrEmpty(input) ? '\0' : input[input.Length - 1];
         }
@@ -228,7 +228,7 @@ namespace SCMP
         /// </summary>
         /// <param name="filePath">File path to attempt to open</param>
         /// <returns>All bytes read as a <see cref="string"/> or <see langword="null"/></returns>
-        public static string ReadFileBytes(string filePath)
+        public string ReadFileBytes(string filePath)
         {
             byte[] buffer = null;
 
@@ -266,7 +266,7 @@ namespace SCMP
         /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
         /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
         /// <returns><see langword="true"/> if <see cref="File"/> can opened and has bytes to read, <see langword="false"/> otherwise</returns>
-        public static bool IsFileReady(string filePath = null, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None)
+        public bool IsFileReady(string filePath = null, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None)
         {
             if (!File.Exists(filePath) || filePath == null)
             {
@@ -296,7 +296,7 @@ namespace SCMP
         /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
         /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
         /// <param name="milliseconds">Time in milliseconds for <see cref="Thread"/> to sleep before checking <see cref="File"/> again</param>
-        public static void WaitForFile(string filePath, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
+        public void WaitForFile(string filePath, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
         {
             while (!IsFileReady(filePath, fileAccess, fileShare))
             {
@@ -304,7 +304,58 @@ namespace SCMP
             }
         }
 
-        public static bool WriteToFile(string filePath, string value)
+        /// <summary>
+        /// Check if <see cref="File"/> is ready by attempting to open file
+        /// </summary>
+        /// <param name="filePath">Path to <see cref="File"/> to check</param>
+        /// <param name="shouldCreateFile">If <see cref="File"/> should be created if not found</param>
+        /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
+        /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
+        /// <returns><see langword="true"/> if <see cref="File"/> can opened and has bytes to read, <see langword="false"/> otherwise</returns>
+        public bool IsFileReady(string filePath = "", bool shouldCreateFile = true, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None)
+        {
+            if (!File.Exists(filePath) && shouldCreateFile)
+            {
+                File.Create(filePath).Close();
+                //return false;
+            }
+
+            try
+            {
+                using (FileStream inputStream = File.Open(filePath, FileMode.Open, fileAccess, fileShare))
+                {
+                    if (fileAccess == FileAccess.Write)
+                    {
+                        inputStream.Close();
+                        return true;
+                    }
+
+                    return inputStream.Length > 0;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Wait for file to be available
+        /// </summary>
+        /// <param name="filePath">Path to <see cref="File"/> to wait for</param>
+        /// <param name="shouldCreateFile">If <see cref="File"/> should be created if not found</param>    /// <param name="fileAccess"><see cref="FileAccess"/> to attempt to open file with</param>
+        /// <param name="fileShare"><see cref="FileShare"/> to attempt to open file with</param>
+        /// <param name="milliseconds">Time in milliseconds for <see cref="Thread"/> to sleep before checking <see cref="File"/> again</param>
+        /// <param name="end"><see langword="bool"/> to check if false each iteration</param>
+        public void WaitForFile(string filePath, ref bool end, bool shouldCreateFile = true, FileAccess fileAccess = FileAccess.Read, FileShare fileShare = FileShare.None, int milliseconds = 1000)
+        {
+            while (!IsFileReady(filePath, shouldCreateFile, fileAccess, fileShare) && !end)
+            {
+                Thread.Sleep(milliseconds);
+            }
+        }
+
+        public bool WriteToFile(string filePath, string value)
         {
             if (!File.Exists(filePath))
             {
@@ -334,7 +385,7 @@ namespace SCMP
             return true;
         }
 
-        public static bool WriteToFile(string filePath, params string[] values)
+        public bool WriteToFile(string filePath, params string[] values)
         {
             if (!File.Exists(filePath))
             {
