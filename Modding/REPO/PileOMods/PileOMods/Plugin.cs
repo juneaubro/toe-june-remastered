@@ -40,6 +40,10 @@ namespace PileOMods
             // Gun
             harmony.PatchAll(typeof(BoomDead));
 
+            // NoBackgroundHover
+            harmony.PatchAll(typeof(NoBackgroundHover));
+            harmony.PatchAll(typeof(NoBackgroundHover_Stub));
+
             // Global Vars
             harmony.PatchAll(typeof(PlayerAvatarVars));
         }

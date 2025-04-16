@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -66,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches\BoomDead.cs" />
+    <Compile Include="Patches\NoBackgroundHover.cs" />
     <Compile Include="PlayerAvatarVars.cs" />
     <Compile Include="ModHotkey.cs" />
     <Compile Include="Patches\GodMode.cs" />
@@ -78,6 +81,6 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\PileOMods.dll" ( copy /Y "$(TargetPath)" "C:\Users\juneau\AppData\Roaming\r2modmanPlus-local\REPO\profiles\de\BepInEx\plugins\toe-june-PileOMods\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "C:\Users\tonyg\AppData\Roaming\r2modmanPlus-local\LethalCompany\profiles\main\BepInEx\plugins\NightVision\$(TargetFileName)")</PostBuildEvent>
+    <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\PileOMods.dll" ( copy /Y "$(TargetPath)" "C:\Users\juneau\AppData\Roaming\r2modmanPlus-local\REPO\profiles\de\BepInEx\plugins\toe-june-PileOMods\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "C:\Users\tonyg\AppData\Roaming\r2modmanPlus-local\REPO\profiles\POM\BepInEx\plugins\POM\$(TargetFileName)")</PostBuildEvent>
   </PropertyGroup>
 </Project>
