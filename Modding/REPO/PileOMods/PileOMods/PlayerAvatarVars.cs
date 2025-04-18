@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using PileOMods.Patches;
 using UnityEngine;
 
 namespace PileOMods
@@ -13,6 +14,14 @@ namespace PileOMods
         static void Update(PlayerAvatar __instance)
         {
             spawnPos = (Vector3)Traverse.Create(__instance).Field("spawnPosition").GetValue();
+        }
+
+        [HarmonyPatch(typeof(PlayerAvatar), "PlayerDeath")]
+        [HarmonyPrefix]
+        static void PlayerDeath()
+        {
+            if (GodMode.isGodMode)
+                return;
         }
     }
 }

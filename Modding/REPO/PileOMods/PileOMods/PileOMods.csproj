@@ -55,6 +55,10 @@
     <Reference Include="Unity.InputSystem">
       <HintPath>..\..\..\..\..\..\SteamLibrary\steamapps\common\REPO\REPO_Data\Managed\Unity.InputSystem.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\SteamLibrary\steamapps\common\REPO\REPO_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\..\SteamLibrary\steamapps\common\REPO\REPO_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
@@ -67,8 +71,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Patches\DisablePost.cs" />
+    <Compile Include="Patches\Fog.cs" />
+    <Compile Include="EnergyUIVars.cs" />
+    <Compile Include="HealthUIVars.cs" />
     <Compile Include="Patches\BoomDead.cs" />
     <Compile Include="Patches\NoBackgroundHover.cs" />
+    <Compile Include="Patches\Stamina.cs" />
     <Compile Include="PlayerAvatarVars.cs" />
     <Compile Include="ModHotkey.cs" />
     <Compile Include="Patches\GodMode.cs" />

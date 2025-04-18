@@ -23,9 +23,17 @@ namespace PileOMods.Patches
             oneHPKey.Update();
             maxHealth = (int)Traverse.Create(__instance).Field("maxHealth").GetValue();
             if (isGodMode)
+            {
                 Traverse.Create(__instance).Field("godMode").SetValue(true);
+                Traverse.Create(HealthUIVars.healthUI).Field("Text").Property("color").SetValue(Color.white);
+                Traverse.Create(HealthUIVars.healthUI).Field("textMaxHealth").Property("color").SetValue(Color.white);
+            }
             else
+            {
                 Traverse.Create(__instance).Field("godMode").SetValue(false);
+                Traverse.Create(HealthUIVars.healthUI).Field("Text").Property("color").SetValue(HealthUIVars.healthTextColorTemp);
+                Traverse.Create(HealthUIVars.healthUI).Field("textMaxHealth").Property("color").SetValue(HealthUIVars.maxHealthTextColorTemp);
+            }
             if (fullHPMode)
             {
                 Traverse.Create(__instance).Field("health").SetValue(maxHealth);

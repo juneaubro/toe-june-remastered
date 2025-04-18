@@ -36,9 +36,14 @@ namespace PileOMods
             harmony.PatchAll(typeof(KYS));
             harmony.PatchAll(typeof(GrabDistance));
             harmony.PatchAll(typeof(SpawnTP));
+            harmony.PatchAll(typeof(Stamina));
 
             // Gun
             harmony.PatchAll(typeof(BoomDead));
+
+            // Graphics
+            harmony.PatchAll(typeof(Fog));
+            harmony.PatchAll(typeof(DisablePost));
 
             // NoBackgroundHover
             harmony.PatchAll(typeof(NoBackgroundHover));
@@ -46,6 +51,8 @@ namespace PileOMods
 
             // Global Vars
             harmony.PatchAll(typeof(PlayerAvatarVars));
+            harmony.PatchAll(typeof(HealthUIVars));
+            harmony.PatchAll(typeof(EnergyUIVars));
         }
     }
 }
