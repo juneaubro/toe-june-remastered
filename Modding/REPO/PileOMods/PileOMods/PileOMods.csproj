@@ -78,6 +78,7 @@
     <Compile Include="Patches\BoomDead.cs" />
     <Compile Include="Patches\NoBackgroundHover.cs" />
     <Compile Include="Patches\Stamina.cs" />
+    <Compile Include="Patches\NoClip.cs" />
     <Compile Include="PlayerAvatarVars.cs" />
     <Compile Include="ModHotkey.cs" />
     <Compile Include="Patches\GodMode.cs" />

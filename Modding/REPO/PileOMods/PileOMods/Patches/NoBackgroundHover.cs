@@ -74,9 +74,6 @@ namespace PileOMods.Patches
                     initializedCount++;
             }
 
-            Console.WriteLine($"{instance.ToString()}\t({typeof(TFind)})");
-            Console.WriteLine($"initializedCount: {initializedCount} | childCount: {childCount}");
-
             return initializedCount == childCount && ((zeroCheck && childCount != 0) || !zeroCheck);
         }
     }
