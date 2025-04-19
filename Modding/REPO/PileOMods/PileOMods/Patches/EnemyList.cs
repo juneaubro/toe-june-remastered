@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Timers;
 using TMPro;
 using UnityEngine;
 
@@ -11,7 +12,8 @@ namespace PileOMods.Patches
     {
         public static GameObject enemyListUI;
         public static TextMeshProUGUI tmp;
-        public static Dictionary<string, int> listOfEnemies = new Dictionary<string, int>();
+        public static Dictionary<string,TupleDict> tloe = new Dictionary<string,TupleDict>();
+        public static Dictionary<GameObject,float> timers = new Dictionary<GameObject, float>();
 
         [HarmonyPatch(typeof(StatsUI), "Start")]
         [HarmonyPostfix]
@@ -64,22 +66,92 @@ namespace PileOMods.Patches
             enemyListUI.transform.Find("StatsNumbers").GetComponent<TextMeshProUGUI>().text = "";
             foreach (Transform child in LevelGenerator.Instance.gameObject.transform.parent.GetComponentInChildren<EnemyParent>().transform.parent.transform)
             {
-                if (listOfEnemies.ContainsKey(child.gameObject.name))
-                    listOfEnemies[child.gameObject.name] += 1;
-                else if (child.gameObject.transform.childCount != 0)
-                    listOfEnemies.Add(child.gameObject.name, 1);
-                
+                if (tloe.ContainsKey(child.gameObject.name))
+                {
+                    tloe[child.gameObject.name].v += new Vector2(1, 0);
+                }
+                else if (child.childCount != 0)
+                {
+                    tloe.Add(child.gameObject.name, new TupleDict(child.gameObject,child.gameObject.name,new Vector2(1, 0)));
+                }
+                else if(child.childCount == 0)
+                {
+                    continue;
+                }
+
                 if (!child.gameObject.transform.Find("Enable").gameObject.activeSelf)
-                    listOfEnemies[child.gameObject.name] -= 1;
+                {
+                    tloe[child.gameObject.name].v -= new Vector2(1, 0);
+                }
+                if (tloe[child.gameObject.name].v.x <= 0)
+                {
+                    tloe[child.gameObject.name].v = new Vector2(tloe[child.gameObject.name].v.x,child.gameObject.GetComponent<EnemyParent>().DespawnedTimer);
+                    if (timers.ContainsKey(child.gameObject))
+                    {
+                        timers[child.gameObject] = child.gameObject.GetComponent<EnemyParent>().DespawnedTimer;
+                    }
+                    else
+                    {
+                        timers.Add(child.gameObject, child.gameObject.GetComponent<EnemyParent>().DespawnedTimer);
+                    }
+                }
             }
-            foreach (var child in listOfEnemies)
+            foreach (var child in tloe)
             {
-                enemyListUI.GetComponent<TextMeshProUGUI>().text += $"{child.Key}\n";
-                enemyListUI.transform.Find("StatsNumbers").GetComponent<TextMeshProUGUI>().text += $"{child.Value}\n";
+                enemyListUI.GetComponent<TextMeshProUGUI>().text += $"{child.Key}";
+                if (child.Value.v.y != 0)
+                {
+                    float lowestTimer = float.MaxValue;
+                    foreach (var timer in timers)
+                    {
+                        if (timer.Key.name == child.Value.str)
+                        {
+                            if (timer.Value < lowestTimer)
+                            {
+                                lowestTimer = timer.Value;
+                                child.Value.v.y = lowestTimer;
+                            }
+                        }
+                    }
+                    enemyListUI.GetComponent<TextMeshProUGUI>().text += $" {ConvertToMinutesSeconds(lowestTimer)}\n";
+                } else if (child.Value.v.y == 0)
+                {
+                    enemyListUI.GetComponent<TextMeshProUGUI>().text += $"\n";
+                }
+                if (child.Value.v.x == 0)
+                {
+                    enemyListUI.transform.Find("StatsNumbers").GetComponent<TextMeshProUGUI>().text += $"-\n";
+                }
+                else
+                {
+                    enemyListUI.transform.Find("StatsNumbers").GetComponent<TextMeshProUGUI>().text += $"{child.Value.v.x}\n";
+                }
             }
             string clean = Regex.Replace(enemyListUI.GetComponent<TextMeshProUGUI>().text, @"Enemy\s*-\s*|\(Clone\)", "").Trim();
             enemyListUI.GetComponent<TextMeshProUGUI>().text = clean.ToUpper();
-            listOfEnemies.Clear();
+            tloe.Clear();
+            timers.Clear();
+        }
+
+        public static string ConvertToMinutesSeconds(float totalSeconds)
+        {
+            int minutes = Mathf.FloorToInt(totalSeconds / 60f);
+            int seconds = Mathf.FloorToInt(totalSeconds % 60f);
+            return string.Format("{0:00}:{1:00}", minutes, seconds);
+        }
+    }
+
+    public class TupleDict
+    {
+        public GameObject go;
+        public string str;
+        public Vector2 v;
+
+        public TupleDict(GameObject go, string str, Vector2 v)
+        {
+            this.go = go;
+            this.str = str;
+            this.v = v;
         }
     }
 }
