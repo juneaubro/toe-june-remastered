@@ -37,7 +37,7 @@ namespace PileOMods.Patches
         [HarmonyPostfix]
         static void Update(StatsUI __instance)
         {
-            if (__instance.gameObject.transform.GetChild(0).gameObject.activeSelf && MainMenuOpen.instance == null)
+            if (__instance.gameObject.transform.GetChild(0).gameObject.activeSelf && LevelGenerator.Instance.gameObject.transform.root.GetComponentInChildren<EnemyParent>()!=null)
             {
                 tmp.enabled = true;
                 enemyListUI.transform.Find("Upgrades Header").GetComponent<TextMeshProUGUI>().enabled = true;
@@ -68,6 +68,9 @@ namespace PileOMods.Patches
                     listOfEnemies[child.gameObject.name] += 1;
                 else if (child.gameObject.transform.childCount != 0)
                     listOfEnemies.Add(child.gameObject.name, 1);
+                
+                if (!child.gameObject.transform.Find("Enable").gameObject.activeSelf)
+                    listOfEnemies[child.gameObject.name] -= 1;
             }
             foreach (var child in listOfEnemies)
             {
