@@ -41,21 +41,20 @@ namespace PileOMods.Patches
                 }
                 else
                 {
-                    int count = 0;
-
                     while (!parent.GetComponent<EnemyParent>() && parent.parent != null)
                     {
-                        count--;
                         if (parent.GetComponent<EnemyHealth>())
                         {
                             target = parent.gameObject;
                             break;
                         }
+
                         enemyHealth = parent.GetComponentInChildren<EnemyHealth>();
                         if (enemyHealth)
+                        {
+                            target = enemyHealth.gameObject;
                             break;
-                        
-                        Console.WriteLine($"[{Math.Abs(count)}]\t{parent.ToString()}");
+                        }
 
                         if (parent.parent != null)
                             parent = parent.parent;
