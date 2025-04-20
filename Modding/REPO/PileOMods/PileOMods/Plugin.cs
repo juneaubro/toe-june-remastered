@@ -37,7 +37,9 @@ namespace PileOMods
             harmony.PatchAll(typeof(GrabDistance));
             harmony.PatchAll(typeof(SpawnTP));
             harmony.PatchAll(typeof(Stamina));
-            harmony.PatchAll(typeof(NoClip));
+            harmony.PatchAll(typeof(NoClip_PlayerController));
+            harmony.PatchAll(typeof(NoClip_PlayerAvatar));
+            harmony.PatchAll(typeof(EnemyList));
 
             // Gun
             harmony.PatchAll(typeof(BoomDead));

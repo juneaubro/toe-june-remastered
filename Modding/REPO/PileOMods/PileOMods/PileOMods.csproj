@@ -37,13 +37,13 @@
     <Compile Include="Patches\DisablePost.cs" />
     <Compile Include="Patches\EnemyList.cs" />
     <Compile Include="Patches\Fog.cs" />
-    <Compile Include="EnergyUIVars.cs" />
-    <Compile Include="HealthUIVars.cs" />
+    <Compile Include="Vars\EnergyUIVars.cs" />
+    <Compile Include="Vars\HealthUIVars.cs" />
     <Compile Include="Patches\BoomDead.cs" />
     <Compile Include="Patches\NoBackgroundHover.cs" />
     <Compile Include="Patches\Stamina.cs" />
     <Compile Include="Patches\NoClip.cs" />
-    <Compile Include="PlayerAvatarVars.cs" />
+    <Compile Include="Vars\PlayerAvatarVars.cs" />
     <Compile Include="ModHotkey.cs" />
     <Compile Include="Patches\GodMode.cs" />
     <Compile Include="Patches\GrabDistance.cs" />
@@ -98,6 +98,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\UnityEngine.CoreModule.dll</HintPath>
@@ -111,6 +115,7 @@
       <HintPath>bin\Debug\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>cd $(SolutionDir) &amp;&amp; if "$(TargetPath)"=="Z:\github\toe-june-remastered\Modding\REPO\PileOMods\PileOMods\bin\Debug\PileOMods.dll" ( copy /Y "$(TargetPath)" "C:\Users\juneau\AppData\Roaming\r2modmanPlus-local\REPO\profiles\de\BepInEx\plugins\toe-june-PileOMods\$(TargetFileName)") else ( copy /Y "$(TargetPath)" "C:\Users\tonyg\AppData\Roaming\r2modmanPlus-local\REPO\profiles\POM\BepInEx\plugins\POM\$(TargetFileName)")</PostBuildEvent>
