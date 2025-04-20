@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Timers;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -13,7 +13,7 @@ namespace PileOMods.Patches
         public static GameObject enemyListUI;
         public static TextMeshProUGUI tmp;
         public static Dictionary<string,TupleDict> tloe = new Dictionary<string,TupleDict>();
-        public static Dictionary<GameObject,float> timers = new Dictionary<GameObject, float>();
+        public static Dictionary<string,List<float>> timers = new Dictionary<string, List<float>>();
 
         [HarmonyPatch(typeof(StatsUI), "Start")]
         [HarmonyPostfix]
@@ -86,13 +86,14 @@ namespace PileOMods.Patches
                 if (tloe[child.gameObject.name].v.x <= 0)
                 {
                     tloe[child.gameObject.name].v = new Vector2(tloe[child.gameObject.name].v.x,child.gameObject.GetComponent<EnemyParent>().DespawnedTimer);
-                    if (timers.ContainsKey(child.gameObject))
+                    if (timers.ContainsKey(child.gameObject.name))
                     {
-                        timers[child.gameObject] = child.gameObject.GetComponent<EnemyParent>().DespawnedTimer;
+                        timers[child.gameObject.name].Add(child.gameObject.GetComponent<EnemyParent>().DespawnedTimer);
                     }
                     else
                     {
-                        timers.Add(child.gameObject, child.gameObject.GetComponent<EnemyParent>().DespawnedTimer);
+                        timers.Add(child.gameObject.name, new List<float>());
+                        timers[child.gameObject.name].Add(child.gameObject.GetComponent<EnemyParent>().DespawnedTimer);
                     }
                 }
             }
@@ -101,19 +102,11 @@ namespace PileOMods.Patches
                 enemyListUI.GetComponent<TextMeshProUGUI>().text += $"{child.Key}";
                 if (child.Value.v.y != 0)
                 {
-                    float lowestTimer = float.MaxValue;
-                    foreach (var timer in timers)
+                    if(timers.TryGetValue(child.Key, out var timerList))
                     {
-                        if (timer.Key.name == child.Value.str)
-                        {
-                            if (timer.Value < lowestTimer)
-                            {
-                                lowestTimer = timer.Value;
-                                child.Value.v.y = lowestTimer;
-                            }
-                        }
+                        child.Value.v.y = timerList.Min();
                     }
-                    enemyListUI.GetComponent<TextMeshProUGUI>().text += $" {ConvertToMinutesSeconds(lowestTimer)}\n";
+                    enemyListUI.GetComponent<TextMeshProUGUI>().text += $" {ConvertToMinutesSeconds(child.Value.v.y)}\n";
                 } else if (child.Value.v.y == 0)
                 {
                     enemyListUI.GetComponent<TextMeshProUGUI>().text += $"\n";
