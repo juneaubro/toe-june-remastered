@@ -40,10 +40,12 @@ namespace PileOMods
             harmony.PatchAll(typeof(NoClip_PlayerController));
             harmony.PatchAll(typeof(NoClip_PlayerAvatar));
             harmony.PatchAll(typeof(EnemyList));
+            harmony.PatchAll(typeof(EnemyOnMap));
 
-            // Gun
+            // Enemy
             harmony.PatchAll(typeof(BoomDead));
-
+            harmony.PatchAll(typeof(SpawnEnemy));
+            
             // Graphics
             harmony.PatchAll(typeof(Fog));
             harmony.PatchAll(typeof(DisablePost));
