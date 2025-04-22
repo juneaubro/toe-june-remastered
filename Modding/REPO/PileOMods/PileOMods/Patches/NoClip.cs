@@ -41,30 +41,24 @@ namespace PileOMods.Patches
                 _instance.Crouching = false;
                 _instance.CrouchDisable(0.2f);
 
-                _rigidbody.velocity = Vector3.zero;
                 _rigidbody.useGravity = !Enabled;
                 _rigidbody.isKinematic = Enabled;
 
-                float x = InputManager.instance.GetMovementX();
-                float y = InputManager.instance.GetMovementY();
+                InputManager inputManager = InputManager.instance;
+                Transform transform = _instance.transform;
+                float rightDir = inputManager.GetMovementX();
+                float forwardDir = inputManager.GetMovementY();
                 float upDir = 0.0f;
                 float flySpeed = 10.0f;
 
-                if (InputManager.instance.GetAction(InputKey.Sprint).IsPressed())
+                if (inputManager.GetAction(InputKey.Sprint).IsPressed())
                     flySpeed *= 1.75f;
-
-                if (InputManager.instance.GetAction(InputKey.Jump).IsPressed())
-                {
+                if (inputManager.GetAction(InputKey.Jump).IsPressed())
                     upDir = 1.0f;
-                }
-
-                if (InputManager.instance.GetAction(InputKey.Crouch).IsPressed())
-                {
+                if (inputManager.GetAction(InputKey.Crouch).IsPressed())
                     upDir = -1.0f;
-                }
 
-                Vector3 value = (_instance.transform.right * x) + (_instance.transform.forward * y) + (_instance.transform.up * upDir);
-                _instance.transform.position += value * flySpeed * Time.deltaTime;
+                transform.position += ((transform.right * rightDir) + (transform.forward * forwardDir) + (transform.up * upDir)) * flySpeed * Time.deltaTime;
             }
         }
 
@@ -76,6 +70,7 @@ namespace PileOMods.Patches
             Enabled = !Enabled;
 
             _rigidbody.detectCollisions = !Enabled;
+            _rigidbody.velocity = Vector3.zero;
 
             _footstepAudioSource.mute = Enabled;
 
@@ -84,19 +79,74 @@ namespace PileOMods.Patches
             _instance.Velocity = Vector3.zero;
             _instance.VelocityRelative = Vector3.zero;
 
-            Console.WriteLine($"noclip: {Enabled}");
+            Console.WriteLine($"noclip {(Enabled ? "enabled" : "disabled")}");
         }
     }
 
     [HarmonyPatch(typeof(PlayerAvatar))]
     internal class NoClip_PlayerAvatar
     {
+        private static float _originalLandVolume;
+        private static float _originalJumpVolume;
+        private static float _originalSlideVolume;
+
+        [HarmonyPatch(typeof(PlayerAvatar), "Start")]
+        [HarmonyPostfix]
+        public static void Start(PlayerAvatar __instance)
+        {
+            _originalLandVolume = __instance.landSound.Volume;
+            _originalJumpVolume = __instance.jumpSound.Volume;
+            _originalSlideVolume = __instance.slideSound.Volume;
+        }
+
         [HarmonyPatch(typeof(PlayerAvatar), "StandToCrouch")]
         [HarmonyPrefix]
         public static void StandToCrouch()
         {
             if (NoClip_PlayerController.Enabled)
                 return;
+        }
+
+        [HarmonyPatch(typeof(PlayerAvatar), "Land")]
+        [HarmonyPrefix]
+        public static void Land_Prefix(PlayerAvatar __instance)
+        {
+            __instance.landSound.Volume = NoClip_PlayerController.Enabled ? 0.0f : _originalLandVolume;
+        }
+
+        [HarmonyPatch(typeof(PlayerAvatar), "Land")]
+        [HarmonyPostfix]
+        public static void Land_Postfix(PlayerAvatar __instance)
+        {
+            __instance.landSound.Volume = NoClip_PlayerController.Enabled ? 0.0f : _originalLandVolume;
+        }
+
+        [HarmonyPatch(typeof(PlayerAvatar), "Jump")]
+        [HarmonyPrefix]
+        public static void Jump_Prefix(PlayerAvatar __instance)
+        {
+            __instance.jumpSound.Volume = NoClip_PlayerController.Enabled ? 0.0f : _originalJumpVolume;
+        }
+
+        [HarmonyPatch(typeof(PlayerAvatar), "Jump")]
+        [HarmonyPostfix]
+        public static void Jump_Postfix(PlayerAvatar __instance)
+        {
+            __instance.jumpSound.Volume = NoClip_PlayerController.Enabled ? 0.0f : _originalJumpVolume;
+        }
+
+        [HarmonyPatch(typeof(PlayerAvatar), "Slide")]
+        [HarmonyPrefix]
+        public static void Slide_Prefix(PlayerAvatar __instance)
+        {
+            __instance.slideSound.Volume = NoClip_PlayerController.Enabled ? 0.0f : _originalSlideVolume;
+        }
+
+        [HarmonyPatch(typeof(PlayerAvatar), "Slide")]
+        [HarmonyPostfix]
+        public static void Slide_Postfix(PlayerAvatar __instance)
+        {
+            __instance.slideSound.Volume = NoClip_PlayerController.Enabled ? 0.0f : _originalSlideVolume;
         }
     }
 }
